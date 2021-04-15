@@ -477,14 +477,16 @@ router.post('/addCartItems', async (req, res) => {
   try {
     let query
     let cartItems
-    const getAllCartList = await cart.find({
+    const getAllCartList = await cart.findOne({
       employeeID: req.body.employeeID
-    });
-    console.log("cartLsit",getAllCartList.cartArray)
-    if(Array.isArray(getAllCartList.cartArray))
+    })
+
+    console.log("cartLsit",getAllCartList)
+    if(getAllCartList&& getAllCartList.cartArray)
     {
-console.log("if")
-      query = [getAllCartList.cartArray,{quantity:req.body.quantity,itemId:req.body.itemId}]
+console.log("if", getAllCartList)
+      query = [...getAllCartList.cartArray,{quantity:req.body.quantity,itemId:req.body.itemId}]
+      console.log(query)
        cartItems = await cart.findOneAndUpdate({employeeID: req.body.employeeID},{cartArray: query})
        console.log("cart itemsssssssssss1",cartItems);
     }
@@ -500,7 +502,7 @@ console.log("if")
       // console.log("new user",cartItems)
   
       // const savedCartList = await postCartItems.save();
-      res.json({success:"Added To Cart Successfully"});
+      res.json({success:"Added To Cart Successfully", cartItems});
     }
   
   // if (err) {
