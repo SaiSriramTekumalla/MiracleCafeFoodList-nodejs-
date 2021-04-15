@@ -18,7 +18,6 @@ let MongoClient = require('mongodb').MongoClient;
 
 router.post('/allMealTypes', async (req, res) => {
   try {
-<<<<<<< Updated upstream
     console.log("reqafsda",req.body.mealType)
     var getAllItemsList 
     if (req.body.mealType === "") {
@@ -33,13 +32,6 @@ router.post('/allMealTypes', async (req, res) => {
           x['image'] = fileToBase64(x['image'])
 
         }
-=======
-    var getAllItemsList
-    if (req.body.mealType === "") {
-      getAllItemsList = await itemsSchema.find().lean();
-      getAllItemsList.forEach(x => {
-        x['image'] = fileToBase64(x['image'])
->>>>>>> Stashed changes
       })
       res.json(getAllItemsList)
     }
@@ -332,11 +324,7 @@ router.get('/getByDietType', async (req, res) => {
   }
 });
 
-<<<<<<< Updated upstream
   //localhost:8000/itemList/getByMealType?mealType=Lunch&&username=ssetty (get)
-=======
-//localhost:8000/itemList/getByMealType?mealType=Lunch (get)
->>>>>>> Stashed changes
 
 router.get('/getByMealType', async (req, res) => {
   console.log("reached")
@@ -490,18 +478,11 @@ router.post('/addCartItems', async (req, res) => {
       employeeID: req.body.employeeID
     })
 
-<<<<<<< Updated upstream
     console.log("cartLsit",getAllCartList)
     if(getAllCartList && getAllCartList.cartArray)
     {
 console.log("if", getAllCartList)
       query = [...getAllCartList.cartArray,{quantity:req.body.quantity,itemId:req.body.itemId}]
-=======
-    console.log("cartLsit", getAllCartList)
-    if (getAllCartList && getAllCartList.cartArray) {
-      console.log("if", getAllCartList)
-      query = [...getAllCartList.cartArray, { quantity: req.body.quantity, itemId: req.body.itemId }]
->>>>>>> Stashed changes
       console.log(query)
       cartItems = await cart.findOneAndUpdate({ employeeID: req.body.employeeID }, { cartArray: query })
       console.log("cart itemsssssssssss1", cartItems);
@@ -577,17 +558,10 @@ router.post('/deleteCartArray', (req, res) => {
   cart.deleteOne({ 'employeeID': req.body.employeeID }, async (err, doc) => {
     if (!err) {
       const orderDetails = await orders.find({ 'employeeID': req.body.employeeID });
-<<<<<<< Updated upstream
-      console.log("orderDetails", orderDetails);
-// let newItemId = 
-// console.log(newItemId)
-      const myOrders =  new orders({
-=======
       // console.log("orderDetails", orderDetails);
       // let newItemId = 
       // console.log(newItemId)
       const myOrders = new orders({
->>>>>>> Stashed changes
         // _id: await getSequenceNextValue("itemId"),
         orderDetails: req.body.cartDetails,
         employeeID: req.body.employeeID,
@@ -655,7 +629,6 @@ router.get('/getAllCart', async (req, res) => {
     var allItems = []
     const getAllCartList = await cart.find({
       employeeID: req.query.empId
-<<<<<<< Updated upstream
     }).lean();
     // console.log("safasd",getAllCartList)
     getAllCartList.map( x=> {
@@ -679,8 +652,6 @@ router.get('/getAllCart', async (req, res) => {
       })
      
       console.log("allitems",allItems)
-=======
->>>>>>> Stashed changes
     })
  
     let cartArray =  getAllCartList[0].cartArray;
@@ -824,7 +795,6 @@ router.post('/', upload.single('userImage'), (req, res) => {
 
 
 //localhost:8000/itemList/deleteMenu/31
-<<<<<<< Updated upstream
 // router.delete('/deleteMenu/:itemId', (req, res) => {
 //   itemsSchema.deleteOne({ itemId: req.params.itemId },
 //     { new: false }, (err, doc) => {
@@ -836,19 +806,6 @@ router.post('/', upload.single('userImage'), (req, res) => {
 //       }
 //     });
 // });
-=======
-router.delete('/deleteMenu/:itemId', (req, res) => {
-  itemsSchema.deleteOne({ itemId: req.params.itemId },
-    { new: false }, (err, doc) => {
-      if (!err) {
-        res.json({ success: "Deleted Succesfully" });
-      }
-      else {
-        console.log('Not deleted' + JSON.stringify(err, undefined, 2));
-      }
-    });
-});
->>>>>>> Stashed changes
 
 
 //  localhost:8000/itemList/updateFoodItem
@@ -875,17 +832,10 @@ router.post('/updateFoodItem', (req, res) => {
 });
 
 
-<<<<<<< Updated upstream
 router.delete('/deleteMenu/:itemId',async (req,res) => {
   try{
     var deleteResult = await itemsSchema.deleteOne({itemId:req.params.itemId})
     res.json({success:"Deleted Successfully"})
-=======
-router.delete('/deleteFoodItem/:id', async (req, res) => {
-  try {
-    var deleteResult = await itemsSchema.deleteOne({ itemId: req.params.id })
-    res.json({ success: "Deleted Successfully" })
->>>>>>> Stashed changes
   }
   catch (err) {
     res.json({ message: err.message })
