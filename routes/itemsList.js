@@ -18,6 +18,7 @@ let MongoClient = require('mongodb').MongoClient;
 
 router.post('/allMealTypes', async (req, res) => {
   try {
+<<<<<<< Updated upstream
     console.log("reqafsda",req.body.mealType)
     var getAllItemsList 
     if (req.body.mealType === "") {
@@ -32,34 +33,41 @@ router.post('/allMealTypes', async (req, res) => {
           x['image'] = fileToBase64(x['image'])
 
         }
+=======
+    var getAllItemsList
+    if (req.body.mealType === "") {
+      getAllItemsList = await itemsSchema.find().lean();
+      getAllItemsList.forEach(x => {
+        x['image'] = fileToBase64(x['image'])
+>>>>>>> Stashed changes
       })
       res.json(getAllItemsList)
     }
-    else{
-      getAllItemsList = await itemsSchema.find({mealType:req.body.mealType})
-      getAllItemsList.forEach( x => {
+    else {
+      getAllItemsList = await itemsSchema.find({ mealType: req.body.mealType })
+      getAllItemsList.forEach(x => {
         x['image'] = fileToBase64(x['image'])
       })
       res.json(getAllItemsList)
     }
     // let brk = [], lch = [], snc = [], din = [], dik = [];
     // getAllItemsList.filter(food => {
-// /
-      // if (food.mealType === 'Breakfast') {
-      //   brk.push(food);
-      // }
-      // else if (food.mealType === 'Lunch') {
-      //   lch.push(food);
-      // }
-      // else if (food.mealType === 'Dinner') {
-      //   din.push(food);
-      // }
-      // else if (food.mealType === 'Snack') {
-      //   snc.push(food);
-      // }
-      // else {
-      //   dik.push(food)
-      // }
+    // /
+    // if (food.mealType === 'Breakfast') {
+    //   brk.push(food);
+    // }
+    // else if (food.mealType === 'Lunch') {
+    //   lch.push(food);
+    // }
+    // else if (food.mealType === 'Dinner') {
+    //   din.push(food);
+    // }
+    // else if (food.mealType === 'Snack') {
+    //   snc.push(food);
+    // }
+    // else {
+    //   dik.push(food)
+    // }
     // })
     // res.json([brk, lch, din, snc, dik])
   }
@@ -129,27 +137,27 @@ router.get('/getByCredentials', async (req, res) => {
 router.post('/addMenu', upload.single('image'), async (req, res) => {
   console.log(req.body);
   try {
-  const postAllItemList = new itemsSchema({
-    itemId: await getSequenceNextValue("itemId2"),
-    title: req.body.title,
-    points: req.body.points,
-    // itemValue:req.body.itemValue,
-    // itemId: req.body.itemId,
-    dietType: req.body.dietType,
-    mealType: req.body.mealType,
-    // likes: req.body.likes,
-    availability: req.body.availability,
-    description: req.body.description,
-    content: req.body.content,
-    availableTime: req.body.availableTime,
-    productionTime: req.body.productionTime,
-    isLiked : 0
-  })
-  console.log("post all items",postAllItemList)
-  if (req.file) {
-    postAllItemList.image = req.file.path
-  }
- 
+    const postAllItemList = new itemsSchema({
+      itemId: await getSequenceNextValue("itemId2"),
+      title: req.body.title,
+      points: req.body.points,
+      // itemValue:req.body.itemValue,
+      // itemId: req.body.itemId,
+      dietType: req.body.dietType,
+      mealType: req.body.mealType,
+      // likes: req.body.likes,
+      availability: req.body.availability,
+      description: req.body.description,
+      content: req.body.content,
+      availableTime: req.body.availableTime,
+      productionTime: req.body.productionTime,
+      isLiked: 0
+    })
+    console.log("post all items", postAllItemList)
+    if (req.file) {
+      postAllItemList.image = req.file.path
+    }
+
     const savedList = await postAllItemList.save();
     res.json(savedList);
   }
@@ -231,41 +239,38 @@ router.get('/searchByItem', async (req, res) => {
 
 router.get('/getByItemTitle', async (req, res) => {
   try {
-    var exists  = await userFavourites.find({ username: req.query.username }, { bookmarks: 1  })
-    var cartItem = await cart.find({employeeID:req.query.employeeID})
-    console.log("cart------------>",cartItem)
-    console.log(req.query.title,req.query.username,exists)
+    var exists = await userFavourites.find({ username: req.query.username }, { bookmarks: 1 })
+    var cartItem = await cart.find({ employeeID: req.query.employeeID })
+    console.log("cart------------>", cartItem)
+    console.log(req.query.title, req.query.username, exists)
     var item = '/' + req.query.title + '/i'
     //console.log(item)
     // {$or : [{title :  fname}, { mealtype: fname },{foodtype : fname} ]}
-   var mealTypeItem  = await itemsSchema.find({ title: req.query.title }).lean()
-  //  console.log(mealTypeItem)
-   mealTypeItem.forEach(x => {
-        if(exists[0].bookmarks.includes(x._id))
-        {
-         x['isLiked'] = 1
-        }
-        else
-        {
-          x['isLiked'] = 0
-        }
+    var mealTypeItem = await itemsSchema.find({ title: req.query.title }).lean()
+    //  console.log(mealTypeItem)
+    mealTypeItem.forEach(x => {
+      if (exists[0].bookmarks.includes(x._id)) {
+        x['isLiked'] = 1
+      }
+      else {
+        x['isLiked'] = 0
+      }
 
-        if(cartItem.includes(x._id))
-        {
-          x['cartAvailability'] = true
-        }
+      if (cartItem.includes(x._id)) {
+        x['cartAvailability'] = true
+      }
 
-        else{
-          x['cartAvailability'] = false
-        }
-        
-        
-        x['image'] = fileToBase64(x['image'])
-      })
-      // docs['image'] = fileToBase64(docs['image'])
-      // console.log(docs)
-      res.json(mealTypeItem)
-  
+      else {
+        x['cartAvailability'] = false
+      }
+
+
+      x['image'] = fileToBase64(x['image'])
+    })
+    // docs['image'] = fileToBase64(docs['image'])
+    // console.log(docs)
+    res.json(mealTypeItem)
+
   }
   catch (err) {
     //   console.log("error", err);
@@ -275,27 +280,25 @@ router.get('/getByItemTitle', async (req, res) => {
 
 router.get('/getByItemContent', async (req, res) => {
   try {
-    var exists  = await userFavourites.find({ username: req.query.username }, { bookmarks: 1  })
+    var exists = await userFavourites.find({ username: req.query.username }, { bookmarks: 1 })
     // console.log(req.query.title)
     var item = '/' + req.query.title + '/i'
     //console.log(item)
     console.log(req.query.title)
 
-   var result = await itemsSchema.find({ content: new RegExp(req.query.title, 'i') }).lean()
-      // console.log(docs)
-      result.forEach(x => {
-        if(exists[0].bookmarks.includes(x._id))
-        {
-         x['isLiked'] = 1
-        }
-        else
-        {
-          x['isLiked'] = 0
-        }
-        x['image'] = fileToBase64(x['image'])
-      })
-      res.json({result})
-  
+    var result = await itemsSchema.find({ content: new RegExp(req.query.title, 'i') }).lean()
+    // console.log(docs)
+    result.forEach(x => {
+      if (exists[0].bookmarks.includes(x._id)) {
+        x['isLiked'] = 1
+      }
+      else {
+        x['isLiked'] = 0
+      }
+      x['image'] = fileToBase64(x['image'])
+    })
+    res.json({ result })
+
 
   }
   catch (err) {
@@ -311,15 +314,13 @@ router.get('/getByItemContent', async (req, res) => {
 
 router.get('/getByDietType', async (req, res) => {
   try {
-    var exists  = await userFavourites.find({ username: req.query.username }, { bookmarks: 1  })
+    var exists = await userFavourites.find({ username: req.query.username }, { bookmarks: 1 })
     const dietTypeItem = await itemsSchema.find({ dietType: req.query.dietType }).lean();
     dietTypeItem.forEach(x => {
-      if(exists[0].bookmarks.includes(x._id))
-      {
-       x['isLiked'] = 1
+      if (exists[0].bookmarks.includes(x._id)) {
+        x['isLiked'] = 1
       }
-      else
-      {
+      else {
         x['isLiked'] = 0
       }
       x['image'] = fileToBase64(x['image'])
@@ -331,27 +332,29 @@ router.get('/getByDietType', async (req, res) => {
   }
 });
 
+<<<<<<< Updated upstream
   //localhost:8000/itemList/getByMealType?mealType=Lunch&&username=ssetty (get)
+=======
+//localhost:8000/itemList/getByMealType?mealType=Lunch (get)
+>>>>>>> Stashed changes
 
 router.get('/getByMealType', async (req, res) => {
   console.log("reached")
-  try {   
-    var exists  = await userFavourites.find({ username: req.query.username }, { bookmarks: 1  })
-    console.log("exists",exists)
+  try {
+    var exists = await userFavourites.find({ username: req.query.username }, { bookmarks: 1 })
+    console.log("exists", exists)
     if (req.query.title === "") {
       let mealTypeItem = []
-       mealTypeItem = await itemsSchema.find().lean()
+      mealTypeItem = await itemsSchema.find().lean()
       mealTypeItem.forEach(x => {
         console.log("meal type for loop")
-        if(exists[0].bookmarks.includes(x._id))
-        {
-         x['isLiked'] = 1
+        if (exists[0].bookmarks.includes(x._id)) {
+          x['isLiked'] = 1
         }
-        else
-        {
+        else {
           x['isLiked'] = 0
         }
-    
+
         x['image'] = fileToBase64(x['image'])
       })
       res.json(mealTypeItem)
@@ -359,22 +362,20 @@ router.get('/getByMealType', async (req, res) => {
     else if (req.query.title !== "") {
       let mealTypeItem = []
       console.log("meal", req.query.mealType)
-       mealTypeItem = await itemsSchema.find({ mealType: new RegExp(req.query.mealType, 'i') }).lean();
+      mealTypeItem = await itemsSchema.find({ mealType: new RegExp(req.query.mealType, 'i') }).lean();
       // console.log("meal result", mealTypeItem)
-     
+
       // mealTypeItem = await itemsSchema.find().lean()
-     mealTypeItem.forEach(x => {
-       console.log("meal type for loop")
-       if(exists[0].bookmarks.includes(x._id))
-       {
-        x['isLiked'] = 1
-       }
-       else
-       {
-         x['isLiked'] = 0
-       }
-   
-       x['image'] = fileToBase64(x['image'])
+      mealTypeItem.forEach(x => {
+        console.log("meal type for loop")
+        if (exists[0].bookmarks.includes(x._id)) {
+          x['isLiked'] = 1
+        }
+        else {
+          x['isLiked'] = 0
+        }
+
+        x['image'] = fileToBase64(x['image'])
       })
 
       res.json(mealTypeItem);
@@ -417,8 +418,8 @@ function fileToBase64(filename) {
 
 router.post('/getByFilterData', async (req, res) => {
   try {
-    
-    var exists  = await userFavourites.find({ username: req.body.userName }, { bookmarks: 1  })
+
+    var exists = await userFavourites.find({ username: req.body.userName }, { bookmarks: 1 })
     // console.log("req",req.body,"exists",exists)
     // console.log("query")
     var mealQuery = [];
@@ -434,7 +435,7 @@ router.post('/getByFilterData', async (req, res) => {
     }
     // console.log("query1")
     let mealTypeItem = []
-     mealTypeItem = await itemsSchema.find(query).lean();
+    mealTypeItem = await itemsSchema.find(query).lean();
     if (req.body.isFav == "true") {
       const favResult = await userFavourites.find({ username: req.body.userName })
       console.log('favResult', favResult[0].favourites);
@@ -449,28 +450,26 @@ router.post('/getByFilterData', async (req, res) => {
       // console.log("allFilters", allFilters.length);
       res.json(allFilters);
     }
-    else {  
+    else {
       // console.log('else response')
-// var mealItems = Object.assign({},mealTypeItem)
+      // var mealItems = Object.assign({},mealTypeItem)
 
-// mealItems[0].test = 'sampletext'
-// console.log("meal items ---->",mealItems);
-     mealTypeItem.forEach(x => {
-       if(exists[0].bookmarks.includes(x._id))
-       {
-        x['isLiked'] = 1
-       }
-       else
-       {
-         x['isLiked'] = 0
-       }
-   
-      x['image'] = fileToBase64(x.image)
-      // console.log("new ssssssssssssssssssssx",x)
-    })
- 
+      // mealItems[0].test = 'sampletext'
+      // console.log("meal items ---->",mealItems);
+      mealTypeItem.forEach(x => {
+        if (exists[0].bookmarks.includes(x._id)) {
+          x['isLiked'] = 1
+        }
+        else {
+          x['isLiked'] = 0
+        }
+
+        x['image'] = fileToBase64(x.image)
+        // console.log("new ssssssssssssssssssssx",x)
+      })
+
       // console.log("resutl%%%%%%%%%%%%%%%%55",mealTypeItem)
-     
+
       res.json(mealTypeItem);
     }
   }
@@ -482,7 +481,7 @@ router.post('/getByFilterData', async (req, res) => {
 //localhost:8000/itemList/addcartItems   (post)  (Post cart Items)
 
 router.post('/addCartItems', async (req, res) => {
-  console.log("cartItems reqbody",req.body);
+  console.log("cartItems reqbody", req.body);
 
   try {
     let query
@@ -491,30 +490,36 @@ router.post('/addCartItems', async (req, res) => {
       employeeID: req.body.employeeID
     })
 
+<<<<<<< Updated upstream
     console.log("cartLsit",getAllCartList)
     if(getAllCartList && getAllCartList.cartArray)
     {
 console.log("if", getAllCartList)
       query = [...getAllCartList.cartArray,{quantity:req.body.quantity,itemId:req.body.itemId}]
+=======
+    console.log("cartLsit", getAllCartList)
+    if (getAllCartList && getAllCartList.cartArray) {
+      console.log("if", getAllCartList)
+      query = [...getAllCartList.cartArray, { quantity: req.body.quantity, itemId: req.body.itemId }]
+>>>>>>> Stashed changes
       console.log(query)
-       cartItems = await cart.findOneAndUpdate({employeeID: req.body.employeeID},{cartArray: query})
-       console.log("cart itemsssssssssss1",cartItems);
+      cartItems = await cart.findOneAndUpdate({ employeeID: req.body.employeeID }, { cartArray: query })
+      console.log("cart itemsssssssssss1", cartItems);
     }
-    else
-    {
-      query = [{cartArray : {quantity:req.body.quantity,itemId:req.body.itemId},employeeID:req.body.employeeID}]
-      
-  cartItems = await new cart(...query).save();
-  console.log("cart itemsssssssssss2",cartItems);
+    else {
+      query = [{ cartArray: { quantity: req.body.quantity, itemId: req.body.itemId }, employeeID: req.body.employeeID }]
+
+      cartItems = await new cart(...query).save();
+      console.log("cart itemsssssssssss2", cartItems);
     }
 
     // console.log("query",query)
-      // console.log("new user",cartItems)
-  
-      // const savedCartList = await postCartItems.save();
-      res.json({success:"Added To Cart Successfully", cartItems});
-    }
-  
+    // console.log("new user",cartItems)
+
+    // const savedCartList = await postCartItems.save();
+    res.json({ success: "Added To Cart Successfully", cartItems });
+  }
+
   // if (err) {
   //   res.json({ message: err });
   // }
@@ -561,9 +566,9 @@ router.put('/', (req, res) => {
 })
 
 async function getSequenceNextValue(seqName) {
-  console.log({_id:seqName},{$inc:{sequenceValue:1}})
-  var seqDoc = await counterSchema.findOneAndUpdate({_id:seqName},{$inc:{sequenceValue:1}});
-console.log("seq",seqDoc)
+  console.log({ _id: seqName }, { $inc: { sequenceValue: 1 } })
+  var seqDoc = await counterSchema.findOneAndUpdate({ _id: seqName }, { $inc: { sequenceValue: 1 } });
+  console.log("seq", seqDoc)
   return seqDoc.sequenceValue
 }
 router.post('/deleteCartArray', (req, res) => {
@@ -572,10 +577,17 @@ router.post('/deleteCartArray', (req, res) => {
   cart.deleteOne({ 'employeeID': req.body.employeeID }, async (err, doc) => {
     if (!err) {
       const orderDetails = await orders.find({ 'employeeID': req.body.employeeID });
+<<<<<<< Updated upstream
       console.log("orderDetails", orderDetails);
 // let newItemId = 
 // console.log(newItemId)
       const myOrders =  new orders({
+=======
+      // console.log("orderDetails", orderDetails);
+      // let newItemId = 
+      // console.log(newItemId)
+      const myOrders = new orders({
+>>>>>>> Stashed changes
         // _id: await getSequenceNextValue("itemId"),
         orderDetails: req.body.cartDetails,
         employeeID: req.body.employeeID,
@@ -598,16 +610,16 @@ router.get('/getOrders', async (req, res) => {
   // console.log("requ query", req.query)
   // const allOrders = await orders.find({ 'employeeID': req.query.employeeID });
   orders.find({ 'employeeID': req.query.employeeID }, function (err, docs) {
-    console.log("order docs-------------------------------------->",docs)
+    console.log("order docs-------------------------------------->", docs)
 
     // for(let i = 0;i<=docs.length;)
     if (!err) {
       docs.forEach(x => {
         // console.log("x--------->",x)
-        x.orderDetails.forEach(async  y => {
+        x.orderDetails.forEach(async y => {
           // y['image'] = fileToBase64(y['image'])
-          var itemMealType = await itemsSchema.findOne({title:y.title},{mealType:1})
-         y.mealType = itemMealType.mealType
+          var itemMealType = await itemsSchema.findOne({ title: y.title }, { mealType: 1 })
+          y.mealType = itemMealType.mealType
           // console.log("ysssssssssss",y,itemMealType);
         })
       })
@@ -638,11 +650,12 @@ router.post('/deleteCartItem', (req, res) => {
 //  localhost:8000/itemList/getAllCart   (get)
 
 router.get('/getAllCart', async (req, res) => {
-  console.log("cart response", req.query);
+  // console.log("cart response", req.query);
   try {
     var allItems = []
     const getAllCartList = await cart.find({
       employeeID: req.query.empId
+<<<<<<< Updated upstream
     }).lean();
     // console.log("safasd",getAllCartList)
     getAllCartList.map( x=> {
@@ -666,15 +679,31 @@ router.get('/getAllCart', async (req, res) => {
       })
      
       console.log("allitems",allItems)
+=======
+>>>>>>> Stashed changes
     })
-    
-    res.json({data:allItems});
-      // console.log("sadfsdafsdaf",itemData)
+ 
+    let cartArray =  getAllCartList[0].cartArray;
+    for (let index = 0; index < cartArray.length; index++) {
+       let itemData = await itemsSchema.findOne({ _id: cartArray[index].itemId });
+      allItems.push({
+        itemId: itemData._id,
+        points: itemData.points,
+        // image: fileToBase64(itemData.image),
+        title: itemData.title,
+        ratings: itemData.likes,
+        quantity: cartArray[index].quantity,
+        totalPoints: itemData.points * cartArray[index].quantity
+      })
     }
-  // console.log("all items----------",allItems);
-    
-  
+     
+    res.json({ allItems, message: "Success" });
+  }
+
+
+
   catch (err) {
+  console.log(err.message)
     res.json([]);
   }
 });
@@ -795,6 +824,7 @@ router.post('/', upload.single('userImage'), (req, res) => {
 
 
 //localhost:8000/itemList/deleteMenu/31
+<<<<<<< Updated upstream
 // router.delete('/deleteMenu/:itemId', (req, res) => {
 //   itemsSchema.deleteOne({ itemId: req.params.itemId },
 //     { new: false }, (err, doc) => {
@@ -806,6 +836,19 @@ router.post('/', upload.single('userImage'), (req, res) => {
 //       }
 //     });
 // });
+=======
+router.delete('/deleteMenu/:itemId', (req, res) => {
+  itemsSchema.deleteOne({ itemId: req.params.itemId },
+    { new: false }, (err, doc) => {
+      if (!err) {
+        res.json({ success: "Deleted Succesfully" });
+      }
+      else {
+        console.log('Not deleted' + JSON.stringify(err, undefined, 2));
+      }
+    });
+});
+>>>>>>> Stashed changes
 
 
 //  localhost:8000/itemList/updateFoodItem
@@ -832,16 +875,22 @@ router.post('/updateFoodItem', (req, res) => {
 });
 
 
+<<<<<<< Updated upstream
 router.delete('/deleteMenu/:itemId',async (req,res) => {
   try{
     var deleteResult = await itemsSchema.deleteOne({itemId:req.params.itemId})
     res.json({success:"Deleted Successfully"})
+=======
+router.delete('/deleteFoodItem/:id', async (req, res) => {
+  try {
+    var deleteResult = await itemsSchema.deleteOne({ itemId: req.params.id })
+    res.json({ success: "Deleted Successfully" })
+>>>>>>> Stashed changes
   }
-  catch(err)
-  {
-    res.json({message:err.message})
+  catch (err) {
+    res.json({ message: err.message })
   }
- 
+
 })
 
 module.exports = router;
