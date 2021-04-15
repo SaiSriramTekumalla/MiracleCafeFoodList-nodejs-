@@ -478,11 +478,10 @@ router.post('/addCartItems', async (req, res) => {
       employeeID: req.body.employeeID
     })
 
-    console.log("cartLsit",getAllCartList)
-    if(getAllCartList && getAllCartList.cartArray)
-    {
-console.log("if", getAllCartList)
-      query = [...getAllCartList.cartArray,{quantity:req.body.quantity,itemId:req.body.itemId}]
+    console.log("cartLsit", getAllCartList)
+    if (getAllCartList && getAllCartList.cartArray) {
+      console.log("if", getAllCartList)
+      query = [...getAllCartList.cartArray, { quantity: req.body.quantity, itemId: req.body.itemId }]
       console.log(query)
       cartItems = await cart.findOneAndUpdate({ employeeID: req.body.employeeID }, { cartArray: query })
       console.log("cart itemsssssssssss1", cartItems);
@@ -818,12 +817,5 @@ router.delete('/deleteMenu/:itemId',async (req,res) => {
     res.json({ message: err.message })
   }
 
-})
-
-module.exports = router;
-
-
-
-
-
-
+});
+ 
