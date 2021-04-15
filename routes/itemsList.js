@@ -18,11 +18,20 @@ let MongoClient = require('mongodb').MongoClient;
 
 router.post('/allMealTypes', async (req, res) => {
   try {
+    console.log("reqafsda",req.body.mealType)
     var getAllItemsList 
     if (req.body.mealType === "") {
+      console.log("if")
       getAllItemsList =  await itemsSchema.find().lean();
+      console.log('asdfsdaf',getAllItemsList)
       getAllItemsList.forEach( x => {
-        x['image'] = fileToBase64(x['image'])
+        // console.log("xzdfafddafa",x.image)
+        if(x.image !== null && x.image !== undefined)
+        {
+          console.log("ifsdfsadf")
+          x['image'] = fileToBase64(x['image'])
+
+        }
       })
       res.json(getAllItemsList)
     }
@@ -55,7 +64,7 @@ router.post('/allMealTypes', async (req, res) => {
     // res.json([brk, lch, din, snc, dik])
   }
   catch (err) {
-    res.json({ message: err });
+    res.json([]);
   }
 });
 
@@ -322,7 +331,7 @@ router.get('/getByDietType', async (req, res) => {
   }
 });
 
-  //localhost:8000/itemList/getByMealType?mealType=Lunch (get)
+  //localhost:8000/itemList/getByMealType?mealType=Lunch&&username=ssetty (get)
 
 router.get('/getByMealType', async (req, res) => {
   console.log("reached")
@@ -385,9 +394,10 @@ const { constants } = require('buffer');
 const { array } = require('../middleware/upload');
 const { isArray } = require('util');
 const { get } = require('mongoose');
+const { Z_ASCII } = require('zlib');
 
 function fileToBase64(filename) {
-  if (filename !== undefined) {
+  if (filename !== undefined && filename !== null)  {
     // var filename = filename;
     // console.log(filename)
     var binaryData = fs.readFileSync(filename)
@@ -482,7 +492,7 @@ router.post('/addCartItems', async (req, res) => {
     })
 
     console.log("cartLsit",getAllCartList)
-    if(getAllCartList&& getAllCartList.cartArray)
+    if(getAllCartList && getAllCartList.cartArray)
     {
 console.log("if", getAllCartList)
       query = [...getAllCartList.cartArray,{quantity:req.body.quantity,itemId:req.body.itemId}]
@@ -517,28 +527,24 @@ console.log("if", getAllCartList)
 
 //localhost:8000/itemList/updateCart/
 
-router.put('/updateCart', (req, res) => {
+router.put('/updateCart',async (req, res) => {
 
-  // console.log('req.body', req.body);
-  cart.findOneAndUpdate({
-    'employeeID': req.body.employeeID,
-    'cartArray.title': req.body.title
-  }, {
-    $set: {
-      'cartArray.$.quantity': req.body.quantity,
-      'cartArray.$.totalPoints': req.body.totalPoints
-    }
-  }, { new: true }, (err, doc) => {
-
-    if (!err) {
-      res.send(doc)
-
-    }
-    else {
-      console.log('Not updated' + JSON.stringify(err, undefined, 2));                                   //Display error if not updated
-    }
-  });
-
+  console.log('req.body', req.body);
+  // userFavourites.updateOne({ "username": name }, { $set: { "favourites": favourites, "allergies": allergies, "days": days, "diet": diet, "points": points } },
+  var userCart = await cart.find({employeeID:req.body.employeeID})
+    userCart[0].cartArray.filter(x => {
+      // console.log("ssfsdfwerwerwer",x.itemId,req.body.itemI)
+      if(x.itemId == req.body.itemId)
+      {
+        x.quantity = req.body.quantity
+        console.log("sfasdf",x)
+      }
+      return x;
+    })
+    // console.log("iserr",userCart)
+    // await cart.findOneAndUpdate({employeeID:req.body.employeeID},{cartArray:userCart[0].cartArray})
+    console.log("userCart",userCart)
+    res.json({success:"Cart Updated Successfully", data : userCart })
 });
 
 
@@ -561,12 +567,12 @@ console.log("seq",seqDoc)
   return seqDoc.sequenceValue
 }
 router.post('/deleteCartArray', (req, res) => {
-  // console.log("req", req.body);
+  console.log("req", req.body.cartDetails);
   // let ressss = getNextSequenceValue("orderId")
   cart.deleteOne({ 'employeeID': req.body.employeeID }, async (err, doc) => {
     if (!err) {
       const orderDetails = await orders.find({ 'employeeID': req.body.employeeID });
-      // console.log("orderDetails", orderDetails);
+      console.log("orderDetails", orderDetails);
 // let newItemId = 
 // console.log(newItemId)
       const myOrders =  new orders({
@@ -629,7 +635,7 @@ router.post('/deleteCartItem', (req, res) => {
 }
 );
 
-//  localhost:8000/itemList/allCart   (get)
+//  localhost:8000/itemList/getAllCart   (get)
 
 router.get('/getAllCart', async (req, res) => {
   console.log("cart response", req.query);
@@ -638,13 +644,13 @@ router.get('/getAllCart', async (req, res) => {
     const getAllCartList = await cart.find({
       employeeID: req.query.empId
     }).lean();
-    console.log("safasd",getAllCartList)
-    getAllCartList.forEach( x=> {
+    // console.log("safasd",getAllCartList)
+    getAllCartList.map( x=> {
       x.cartArray.forEach(async y => {
-        console.log("forrrrrrrr")
+        // console.log("forrrrrrrr")
         var itemData = await itemsSchema.findOne({_id:y.itemId},{points:1,quantity:1,image:1
         ,likes:1,title:1},{}).lean()
-        console.log("itemadfassda",itemData);
+        // console.log("itemadfassda",itemData);
         var responseBody = {
           itemId : itemData._id,
           points : itemData.points,
@@ -654,8 +660,9 @@ router.get('/getAllCart', async (req, res) => {
           quantity: y.quantity,
           totalPoints: itemData.points * y.quantity
         }
-        console.log("ressssss",responseBody)
+        // console.log("ressssss",responseBody)
         allItems.push(responseBody)
+        console.log("allitems1",allItems)
       })
      
       console.log("allitems",allItems)
@@ -788,17 +795,17 @@ router.post('/', upload.single('userImage'), (req, res) => {
 
 
 //localhost:8000/itemList/deleteMenu/31
-router.delete('/deleteMenu/:itemId', (req, res) => {
-  itemsSchema.deleteOne({ itemId: req.params.itemId },
-    { new: false }, (err, doc) => {
-      if (!err) {
-        res.json({success:"Deleted Succesfully"});
-      }
-      else {
-        console.log('Not deleted' + JSON.stringify(err, undefined, 2));
-      }
-    });
-});
+// router.delete('/deleteMenu/:itemId', (req, res) => {
+//   itemsSchema.deleteOne({ itemId: req.params.itemId },
+//     { new: false }, (err, doc) => {
+//       if (!err) {
+//         res.json({success:"Deleted Succesfully"});
+//       }
+//       else {
+//         console.log('Not deleted' + JSON.stringify(err, undefined, 2));
+//       }
+//     });
+// });
 
 
 //  localhost:8000/itemList/updateFoodItem
@@ -825,9 +832,9 @@ router.post('/updateFoodItem', (req, res) => {
 });
 
 
-router.delete('/deleteFoodItem/:id',async (req,res) => {
+router.delete('/deleteMenu/:itemId',async (req,res) => {
   try{
-    var deleteResult = await itemsSchema.deleteOne({itemId:req.params.id})
+    var deleteResult = await itemsSchema.deleteOne({itemId:req.params.itemId})
     res.json({success:"Deleted Successfully"})
   }
   catch(err)

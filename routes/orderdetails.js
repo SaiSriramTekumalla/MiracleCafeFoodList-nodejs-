@@ -74,7 +74,11 @@
 
     // Update Status Of Order
 
-    router.put('')
+    router.put('/updateOrder',async (req,res) => {
+        var result = await orderDetails.findOneAndUpdate({employeeID:req.body.employeeID,"orderDetails.itemId":req.body.itemId}
+        ,{status:req.body.status})
+        res.json(result)
+    })
 
 
 
