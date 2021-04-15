@@ -572,10 +572,10 @@ router.post('/deleteCartArray', (req, res) => {
       })
       // console.log("my orders", myOrders, "ressss", ressss)
       let totalDeductedPoints = req.body.cartDetails["allItems"].reduce((a,b) => {
-        a.totalPoints+b.totalPoints
-        console.log('a',a,'b',b)
+       console.log('a',a,'b',b)
+        return a.totalPoints + b.totalPoints
       } )
-      // console.log("totalpoinst",totalDeductedPoints)
+      console.log("totalpoinst",totalDeductedPoints)
       let result = await myOrders.save();
       result['totalDeductedPoints'] = totalDeductedPoints
     
