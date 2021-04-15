@@ -18,17 +18,17 @@ let MongoClient = require('mongodb').MongoClient;
 
 router.post('/allMealTypes', async (req, res) => {
   try {
-    console.log("reqafsda",req.body.mealType)
+    // console.log("reqafsda",req.body.mealType)
     var getAllItemsList 
     if (req.body.mealType === "") {
-      console.log("if")
+      // console.log("if")
       getAllItemsList =  await itemsSchema.find().lean();
-      console.log('asdfsdaf',getAllItemsList)
+      // console.log('asdfsdaf',getAllItemsList)
       getAllItemsList.forEach( x => {
         // console.log("xzdfafddafa",x.image)
         if(x.image !== null && x.image !== undefined)
         {
-          console.log("ifsdfsadf")
+          // console.log("ifsdfsadf")
           x['image'] = fileToBase64(x['image'])
 
         }
@@ -552,24 +552,33 @@ async function getSequenceNextValue(seqName) {
   return seqDoc.sequenceValue
 }
 router.post('/deleteCartArray', (req, res) => {
-  console.log("req", req.body.cartDetails);
+  // console.log("to be deleted cart details", req.body.cartDetails);
+  
   // let ressss = getNextSequenceValue("orderId")
   cart.deleteOne({ 'employeeID': req.body.employeeID }, async (err, doc) => {
     if (!err) {
-      const orderDetails = await orders.find({ 'employeeID': req.body.employeeID });
+      // const orderDetails = await orders.find({ 'employeeID': req.body.employeeID });
       // console.log("orderDetails", orderDetails);
       // let newItemId = 
       // console.log(newItemId)
+      
       const myOrders = new orders({
         // _id: await getSequenceNextValue("itemId"),
-        orderDetails: req.body.cartDetails,
+        orderDetails: req.body.cartDetails["allItems"],
         employeeID: req.body.employeeID,
         status: "In progress",
         // mealType:req.body.cartDetails.mealType,
         date: req.body.date
       })
       // console.log("my orders", myOrders, "ressss", ressss)
-      const result = await myOrders.save();
+      let totalDeductedPoints = req.body.cartDetails["allItems"].reduce((a,b) => {
+        a.totalPoints+b.totalPoints
+        console.log('a',a,'b',b)
+      } )
+      // console.log("totalpoinst",totalDeductedPoints)
+      let result = await myOrders.save();
+      result['totalDeductedPoints'] = totalDeductedPoints
+    
       res.json({ message: result });
 
     }
