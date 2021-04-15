@@ -478,11 +478,10 @@ router.post('/addCartItems', async (req, res) => {
       employeeID: req.body.employeeID
     })
 
-    console.log("cartLsit",getAllCartList)
-    if(getAllCartList && getAllCartList.cartArray)
-    {
-console.log("if", getAllCartList)
-      query = [...getAllCartList.cartArray,{quantity:req.body.quantity,itemId:req.body.itemId}]
+    console.log("cartLsit", getAllCartList)
+    if (getAllCartList && getAllCartList.cartArray) {
+      console.log("if", getAllCartList)
+      query = [...getAllCartList.cartArray, { quantity: req.body.quantity, itemId: req.body.itemId }]
       console.log(query)
       cartItems = await cart.findOneAndUpdate({ employeeID: req.body.employeeID }, { cartArray: query })
       console.log("cart itemsssssssssss1", cartItems);
@@ -629,29 +628,6 @@ router.get('/getAllCart', async (req, res) => {
     var allItems = []
     const getAllCartList = await cart.find({
       employeeID: req.query.empId
-    }).lean();
-    // console.log("safasd",getAllCartList)
-    getAllCartList.map( x=> {
-      x.cartArray.forEach(async y => {
-        // console.log("forrrrrrrr")
-        var itemData = await itemsSchema.findOne({_id:y.itemId},{points:1,quantity:1,image:1
-        ,likes:1,title:1},{}).lean()
-        // console.log("itemadfassda",itemData);
-        var responseBody = {
-          itemId : itemData._id,
-          points : itemData.points,
-          // image: fileToBase64(itemData.image),
-          title:itemData.title,
-          ratings:itemData.likes,
-          quantity: y.quantity,
-          totalPoints: itemData.points * y.quantity
-        }
-        // console.log("ressssss",responseBody)
-        allItems.push(responseBody)
-        console.log("allitems1",allItems)
-      })
-     
-      console.log("allitems",allItems)
     })
  
     let cartArray =  getAllCartList[0].cartArray;
@@ -841,12 +817,5 @@ router.delete('/deleteMenu/:itemId',async (req,res) => {
     res.json({ message: err.message })
   }
 
-})
-
-module.exports = router;
-
-
-
-
-
-
+});
+ 
