@@ -63,7 +63,7 @@ router.post('/allMealTypes', async (req, res) => {
     // res.json([brk, lch, din, snc, dik])
   }
   catch (err) {
-    res.json([]);
+    res.json({getAllItemsList:[]});
   }
 });
 
@@ -232,8 +232,8 @@ router.get('/getByItemTitle', async (req, res) => {
   try {
     var exists = await userFavourites.find({ username: req.query.username }, { bookmarks: 1 })
     var cartItem = await cart.find({ employeeID: req.query.employeeID })
-    console.log("cart------------>", cartItem)
-    console.log(req.query.title, req.query.username, exists)
+    console.log("cart------------>", cartItem[0].cartArray)
+    console.log("usrrrrrrrrrrr",req.query.title, req.query.username, exists)
     var item = '/' + req.query.title + '/i'
     //console.log(item)
     // {$or : [{title :  fname}, { mealtype: fname },{foodtype : fname} ]}
@@ -246,18 +246,22 @@ router.get('/getByItemTitle', async (req, res) => {
       else {
         x['isLiked'] = 0
       }
+      x['image'] = fileToBase64(x['image'])
+    })
 
-      if (cartItem.includes(x._id)) {
-        x['cartAvailability'] = true
+    mealTypeItem.map((meal,i) => {
+
+      if(cartItem[0].cartArray[i].itemId == meal._id)
+      {
+        meal['cartAvailability'] = true
       }
 
       else {
-        x['cartAvailability'] = false
+        meal['cartAvailability'] = false
       }
 
-
-      x['image'] = fileToBase64(x['image'])
     })
+    // console.log("meeeeeeeealllllllllll",mealTypeItem)
     // docs['image'] = fileToBase64(docs['image'])
     // console.log(docs)
     res.json(mealTypeItem)
