@@ -19,15 +19,14 @@ let MongoClient = require('mongodb').MongoClient;
 router.post('/allMealTypes', async (req, res) => {
   try {
     // console.log("reqafsda",req.body.mealType)
-    var getAllItemsList 
+    var getAllItemsList
     if (req.body.mealType === "") {
       // console.log("if")
-      getAllItemsList =  await itemsSchema.find().lean();
+      getAllItemsList = await itemsSchema.find().lean();
       // console.log('asdfsdaf',getAllItemsList)
-      getAllItemsList.forEach( x => {
+      getAllItemsList.forEach(x => {
         // console.log("xzdfafddafa",x.image)
-        if(x.image !== null && x.image !== undefined)
-        {
+        if (x.image !== null && x.image !== undefined) {
           // console.log("ifsdfsadf")
           x['image'] = fileToBase64(x['image'])
 
@@ -79,7 +78,7 @@ router.get('/all', async (req, res) => {
     res.json(getAllItemsList);
   }
   catch (err) {
-    res.json({ message: err });
+    res.json([]);
   }
 });
 
@@ -91,7 +90,7 @@ router.get('/allEmployees', async (req, res) => {
     res.json(Employees);
   }
   catch (err) {
-    res.json({ message: err });
+    res.json([]);
   }
 });
 
@@ -106,7 +105,7 @@ router.get('/allFav', async (req, res) => {
     // console.log('favrouites table list', getAllFavrouites)
   }
   catch (err) {
-    res.json({ message: err });
+    res.json([]);
     // console.log('favrouites table list error', err)
   }
 });
@@ -120,7 +119,7 @@ router.get('/getByCredentials', async (req, res) => {
     res.json({ status: "success", data: credentials });
   }
   catch (err) {
-    res.json({ message: err });
+    res.json([]);
   }
 });
 
@@ -154,7 +153,7 @@ router.post('/addMenu', upload.single('image'), async (req, res) => {
     res.json(savedList);
   }
   catch (err) {
-    res.json({ message: err.message });
+    res.json([]);
   }
 });
 
@@ -191,7 +190,7 @@ router.get('/getByitemName', async (req, res) => {
     res.json(itemTitle);
   }
   catch (err) {
-    res.json({ message: err });
+    res.json([]);
   }
 
 
@@ -266,7 +265,7 @@ router.get('/getByItemTitle', async (req, res) => {
   }
   catch (err) {
     //   console.log("error", err);
-    res.json({ message: err });
+    res.json([]);
   }
 });
 
@@ -320,11 +319,11 @@ router.get('/getByDietType', async (req, res) => {
     res.json(dietTypeItem);
   }
   catch (err) {
-    res.json({ message: err });
+    res.json([]);
   }
 });
 
-  //localhost:8000/itemList/getByMealType?mealType=Lunch&&username=ssetty (get)
+//localhost:8000/itemList/getByMealType?mealType=Lunch&&username=ssetty (get)
 
 router.get('/getByMealType', async (req, res) => {
   console.log("reached")
@@ -386,7 +385,7 @@ const { get } = require('mongoose');
 const { Z_ASCII } = require('zlib');
 
 function fileToBase64(filename) {
-  if (filename !== undefined && filename !== null)  {
+  if (filename !== undefined && filename !== null) {
     // var filename = filename;
     // console.log(filename)
     var binaryData = fs.readFileSync(filename)
@@ -462,7 +461,7 @@ router.post('/getByFilterData', async (req, res) => {
     }
   }
   catch (err) {
-    console.log(err)
+    res.json([])
   }
 });
 
@@ -505,31 +504,32 @@ router.post('/addCartItems', async (req, res) => {
   // }
   // }
   catch (err) {
-    res.json({ message: err.message });
+    res.json([]);
   }
 
 });
 
 //localhost:8000/itemList/updateCart/
 
-router.put('/updateCart',async (req, res) => {
+router.put('/updateCart', async (req, res) => {
 
-  console.log('req.body', req.body);
+  console.log('req.body cart', req.body);
   // userFavourites.updateOne({ "username": name }, { $set: { "favourites": favourites, "allergies": allergies, "days": days, "diet": diet, "points": points } },
-  var userCart = await cart.find({employeeID:req.body.employeeID})
-    userCart[0].cartArray.filter(x => {
-      // console.log("ssfsdfwerwerwer",x.itemId,req.body.itemI)
-      if(x.itemId == req.body.itemId)
-      {
-        x.quantity = req.body.quantity
-        console.log("sfasdf",x)
-      }
-      return x;
-    })
-    // console.log("iserr",userCart)
-    // await cart.findOneAndUpdate({employeeID:req.body.employeeID},{cartArray:userCart[0].cartArray})
-    console.log("userCart",userCart)
-    res.json({success:"Cart Updated Successfully", data : userCart })
+  var userCart = await cart.find({ employeeID: req.body.employeeID })
+  userCart[0].cartArray.filter(x => {
+    // console.log("ssfsdfwerwerwer",x.itemId,req.body.itemI)
+    if (x.itemId == req.body.itemId) {
+      console.log("iffff")
+      x.quantity = req.body.quantity
+      // console.log("sfasdf", x)
+    }
+    return x;
+  })
+  
+  console.log("userrrrrrrrrrrrrrr",userCart[0].cartArray)
+  await cart.findOneAndUpdate({employeeID:req.body.employeeID},{cartArray:userCart[0].cartArray})
+  console.log("userCarttttttttttttt", userCart)
+  res.json({ success: "Cart Updated Successfully", data: userCart })
 });
 
 
@@ -551,41 +551,63 @@ async function getSequenceNextValue(seqName) {
   console.log("seq", seqDoc)
   return seqDoc.sequenceValue
 }
-router.post('/deleteCartArray', (req, res) => {
-  // console.log("to be deleted cart details", req.body.cartDetails);
-  
-  // let ressss = getNextSequenceValue("orderId")
-  cart.deleteOne({ 'employeeID': req.body.employeeID }, async (err, doc) => {
-    if (!err) {
-      // const orderDetails = await orders.find({ 'employeeID': req.body.employeeID });
-      // console.log("orderDetails", orderDetails);
-      // let newItemId = 
-      // console.log(newItemId)
-      
-      const myOrders = new orders({
-        // _id: await getSequenceNextValue("itemId"),
-        orderDetails: req.body.cartDetails["allItems"],
-        employeeID: req.body.employeeID,
-        status: "In progress",
-        // mealType:req.body.cartDetails.mealType,
-        date: req.body.date
-      })
-      // console.log("my orders", myOrders, "ressss", ressss)
-      let totalDeductedPoints = req.body.cartDetails["allItems"].reduce((a,b) => {
-       console.log('a',a,'b',b)
-        return a.totalPoints + b.totalPoints
-      } )
-      console.log("totalpoinst",totalDeductedPoints)
-      let result = await myOrders.save();
-      result['totalDeductedPoints'] = totalDeductedPoints
-    
-      res.json({ message: result });
+router.post('/deleteCartArray', async (req, res) => {
+  console.log("to be deleted cart details", req.body.cartDetails["allItems"]);
 
-    }
-    else {
-      console.log('Error in Deleting', JSON.stringify(err, undefined, 2));
-    }
-  });
+  // let ressss = getNextSequenceValue("orderId")
+
+  // console.log("my orders", myOrders, "ressss", ressss)
+  let totalDeductedPoints = 0, updatedPoints = 0;
+  req.body.cartDetails["allItems"].filter((a) => {
+    totalDeductedPoints += a.totalPoints
+    // return a.totalPoints + b.totalPoints
+  })
+  console.log("totalpoinst", totalDeductedPoints)
+
+  let response,myOrders;
+  const orderDetails = await userFavourites.findOne({ 'employeeID': req.body.employeeID }, { points: 1 });
+  if (orderDetails.points >= totalDeductedPoints) {
+   let deletedCart =  cart.deleteOne({ 'employeeID': req.body.employeeID })
+   console.log(deletedCart)
+      if (deletedCart) {
+
+        // console.log("orderDetails", orderDetails);
+        // let newItemId = 
+        // console.log(newItemId)
+
+         myOrders = new orders({
+          // _id: await getSequenceNextValue("itemId"),
+          orderDetails: req.body.cartDetails["allItems"],
+          employeeID: req.body.employeeID,
+          status: "In progress",
+          // mealType:req.body.cartDetails.mealType,
+          date: req.body.date
+        })
+        let result = await myOrders.save()
+        response = { result, totalDeductedPoints }
+          updatedPoints = orderDetails.points - totalDeductedPoints
+          const userPoints = await userFavourites.updateOne({ 'employeeID': req.body.employeeID }, { points: updatedPoints });
+    
+        
+      }
+      else {
+        console.log('Error in Deleting', JSON.stringify(err, undefined, 2));
+      }
+     
+
+  }
+
+  else
+    response = { message: "Failed Due To Insufficient Points" }
+  //  res.json()
+
+  // console.log("userpoints",userPoints)
+  console.log("tp included", response)
+  res.json(response);
+
+
+
+
 });
 
 router.get('/getOrders', async (req, res) => {
@@ -638,28 +660,30 @@ router.get('/getAllCart', async (req, res) => {
     const getAllCartList = await cart.find({
       employeeID: req.query.empId
     })
- 
-    let cartArray =  getAllCartList[0].cartArray;
+
+    let cartArray = getAllCartList[0].cartArray;
     for (let index = 0; index < cartArray.length; index++) {
-       let itemData = await itemsSchema.findOne({ _id: cartArray[index].itemId });
+      let itemData = await itemsSchema.findOne({ _id: cartArray[index].itemId });
+      console.log("image",itemData.image)
       allItems.push({
         itemId: itemData._id,
         points: itemData.points,
         // image: fileToBase64(itemData.image),
         title: itemData.title,
-        ratings: itemData.likes,
+        likes: itemData.likes,
+        image:fileToBase64(itemData.image),
         quantity: cartArray[index].quantity,
         totalPoints: itemData.points * cartArray[index].quantity
       })
     }
-     
+
     res.json({ allItems, message: "Success" });
   }
 
 
 
   catch (err) {
-  console.log(err.message)
+    console.log(err.message)
     res.json([]);
   }
 });
@@ -679,7 +703,7 @@ router.post('/addFavrouties', async (req, res) => {
     res.json(savedFavList);
   }
   catch (err) {
-    res.json({ message: err });
+    res.json([]);
   }
 });
 
@@ -817,15 +841,15 @@ router.post('/updateFoodItem', (req, res) => {
 });
 
 
-router.delete('/deleteMenu/:itemId',async (req,res) => {
-  try{
-    var deleteResult = await itemsSchema.deleteOne({itemId:req.params.itemId})
-    res.json({success:"Deleted Successfully"})
+router.delete('/deleteMenu/:itemId', async (req, res) => {
+  try {
+    var deleteResult = await itemsSchema.deleteOne({ itemId: req.params.itemId })
+    res.json({ success: "Deleted Successfully" })
   }
   catch (err) {
-    res.json({ message: err.message })
+    res.json([])
   }
 
 });
- 
-   module.exports = router;
+
+module.exports = router;
