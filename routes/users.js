@@ -4,6 +4,9 @@ const userFavourites = require('../models/userFavourites');
 const upload = require('../middleware/upload');
 const rewardsSchema = require('../models/rewardsSchema');
 const itemsSchema = require('../models/itemsSchema');
+const axios = require('axios');
+const passBookSchema = require('../models/passbookSchema')
+
 // const fileToBase64 = require('../middleware/imageconversion');
 router.get('/getByCredentials', async (req, res) => {
   try {
@@ -104,6 +107,14 @@ router.post('/getFavs', async (req, res) => {
         res.send([{ data: resBody }]);
       }
       else {
+        axios.get('https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY')
+          .then(response => {
+            console.log(response.data.url);
+            console.log(response.data.explanation);
+          })
+          .catch(error => {
+            console.log(error);
+          });
         console.log("else reached")
         const newUserData = new userFavourites({
           // favourites: [],
@@ -122,6 +133,16 @@ router.post('/getFavs', async (req, res) => {
           points: req.body.points || 0
         })
         const savedResult = await newUserData.save();
+        console.log("passbook empId",req.body.employeeID)
+        passBook = new passBookSchema({
+
+          pointsAvailable: 0,
+          employeeID: req.body.employeeID,
+          transactionDetails: []
+
+        })
+
+        await passBook.save();
         console.log("else", savedResult)
         return res.status(200).json([{ data: savedResult }])
       }
@@ -256,27 +277,26 @@ function fileToBase64(filename) {
 router.get('/getBookmarks', async (req, res) => {
 
   try {
-     userBookmarks = []
+    userBookmarks = []
 
     console.log(req.query.employeeID)
 
     const favItems = await userFavourites.findOne({ "employeeID": req.query.employeeID }, { bookmarks: 1 })
-      // console.log("favItems",favItems)
+    // console.log("favItems",favItems)
 
-      for(let i = 0 ;i <= favItems.bookmarks.length ; i++ )
-      {
-        const data = await itemsSchema
-         .findOne({_id:favItems.bookmarks[i]}).lean()
-         .catch((error) => {
+    for (let i = 0; i <= favItems.bookmarks.length; i++) {
+      const data = await itemsSchema
+        .findOne({ _id: favItems.bookmarks[i] }).lean()
+        .catch((error) => {
           console.log(error);
-         }); 
-         userBookmarks.push(data)
-      }
-    console.log("user bookmarks",userBookmarks);
-  res.send({"userBookmarks":userBookmarks})
- 
-    
- } catch (err) {
+        });
+      userBookmarks.push(data)
+    }
+    console.log("user bookmarks", userBookmarks);
+    res.send({ "userBookmarks": userBookmarks })
+
+
+  } catch (err) {
     res.json({ message: err.message });
   }
 
@@ -284,11 +304,10 @@ router.get('/getBookmarks', async (req, res) => {
 
 // get all user favourites based on the username
 
-router.get('/getAllLikedItems',(req,res) => {
-  try{
+router.get('/getAllLikedItems', (req, res) => {
+  try {
 
-  }catch(err)
-  {
+  } catch (err) {
     res.json({ message: err.message });
   }
 })

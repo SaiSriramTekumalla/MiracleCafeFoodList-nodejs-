@@ -25,7 +25,7 @@ dietType: {
        //required: true
       },
 mealType: {
-        type: Array,
+        type: String,
         //required: true
        },
 likes: {

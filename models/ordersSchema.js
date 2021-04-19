@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+const moment = require('moment-timezone');
+const dateIndia = moment(Date.now()).tz("Asia/Kolkata").format().split("+")[0];
 const ordersSchema = mongoose.Schema({
 
   orderDetails: {
@@ -13,7 +15,9 @@ const ordersSchema = mongoose.Schema({
 //   _id:{
 // type:Number
 //   },
-
+totalOrderPoints:{
+  type:Number
+},
   status:{
     type:String
   },
@@ -23,7 +27,7 @@ const ordersSchema = mongoose.Schema({
   // },
   date:{
     type:String,
-    // required:true
+    default:dateIndia
   }
 });
 module.exports = mongoose.model('ordersSchema', ordersSchema);
