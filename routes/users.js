@@ -135,11 +135,9 @@ router.post('/getFavs', async (req, res) => {
         const savedResult = await newUserData.save();
         console.log("passbook empId",req.body.employeeID)
         passBook = new passBookSchema({
-
           pointsAvailable: 0,
           employeeID: req.body.employeeID,
           transactionDetails: []
-
         })
 
         await passBook.save();

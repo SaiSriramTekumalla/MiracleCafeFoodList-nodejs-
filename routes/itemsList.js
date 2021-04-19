@@ -10,7 +10,8 @@ const imageConvert = require('../middleware/imageconversion')
 const counterSchema = require('../models/counterSchema')
 const passBookSchema = require('../models/passbookSchema')
 // const uploads = require('../uploadsFolder')
-
+const moment = require('moment-timezone');
+const timestamp  =  moment(Date.now()).tz("Asia/Kolkata").format().split("+")[0];
 let MongoClient = require('mongodb').MongoClient;
 // const ordersSchema = require('../models/ordersSchema');
 
@@ -588,7 +589,9 @@ router.post('/deleteCartArray', async (req, res) => {
             {
               "pointsSpent": totalDeductedPoints,
               "transactionType"  : "Debit",
-              "transactionReason" : "Order Placed"
+              "transactionReason" : "Order Placed",
+              "timestamp": timestamp,
+              "Order_Id": result._id
             }
           ]
              }
