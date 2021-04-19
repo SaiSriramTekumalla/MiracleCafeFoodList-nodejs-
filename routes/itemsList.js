@@ -13,6 +13,8 @@ const passBookSchema = require('../models/passbookSchema')
 const moment = require('moment-timezone');
 const timestamp  =  moment(Date.now()).tz("Asia/Kolkata").format().split("+")[0];
 let MongoClient = require('mongodb').MongoClient;
+let imagePath = require("../conv-images");
+const fileToBase64 = require('../middleware/imageconversion');
 // const ordersSchema = require('../models/ordersSchema');
 
 
@@ -30,8 +32,11 @@ router.post('/allMealTypes', async (req, res) => {
     var getAllItemsList
     if (req.body.mealType === "") {
       // console.log("if")
-      getAllItemsList = await itemsSchema.find().lean();
+      getAllItemsList = await itemsSchema.find({},{image:0}).lean();
       // console.log('asdfsdaf',getAllItemsList)
+      getAllItemsList.map(data => {
+      data["image"] = fileToBase64(`${imagePath}/${data.title}+.jpg`)
+      })
 
     }
     else {
