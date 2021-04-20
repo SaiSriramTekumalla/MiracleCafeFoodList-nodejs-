@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 var bodyParser = require('body-parser');
 require('dotenv/config');
 const cors = require('cors');
-
+const PORT = process.env.PORT || 8000
 //middleware
 
 app.use(cors());
@@ -39,4 +39,4 @@ mongoose.connect(process.env.DB_CONNECTION,
     // app.getDb = db;
 // module.exports = app;
 
-    app.listen(8000,'172.17.12.68');    
+    app.listen(PORT, () => console.log(`Listening on ${ PORT }`))
