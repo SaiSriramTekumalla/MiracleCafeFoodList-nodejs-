@@ -11,10 +11,10 @@ const counterSchema = require('../models/counterSchema')
 const passBookSchema = require('../models/passbookSchema')
 // const uploads = require('../uploadsFolder')
 const moment = require('moment-timezone');
-const timestamp  =  moment(Date.now()).tz("Asia/Kolkata").format().split("+")[0];
+
 let MongoClient = require('mongodb').MongoClient;
-let imagePath = require("../conv-images");
-const fileToBase64 = require('../middleware/imageconversion');
+// let imagePath = "./conv-images";
+// const fileToBase64 = require('../middleware/imageconversion');
 // const ordersSchema = require('../models/ordersSchema');
 
 
@@ -35,7 +35,7 @@ router.post('/allMealTypes', async (req, res) => {
       getAllItemsList = await itemsSchema.find({},{image:0}).lean();
       // console.log('asdfsdaf',getAllItemsList)
       getAllItemsList.map(data => {
-      data["image"] = fileToBase64(`${imagePath}/${data.title}+.jpg`)
+      data["image"] = fileToBase64(data['image'])
       })
 
     }
@@ -222,7 +222,9 @@ router.get('/getByItemTitle', async (req, res) => {
     // {$or : [{title :  fname}, { mealtype: fname },{foodtype : fname} ]}
     var mealTypeItem = await itemsSchema.findOne({ title: req.query.title }).lean()
     //  console.log(mealTypeItem)
-
+    // data["image"] =
+     
+    mealTypeItem.image =  fileToBase64(mealTypeItem['image'])
     if (exists.bookmarks.includes(mealTypeItem._id)) {
       mealTypeItem['isLiked'] = 1
     }
@@ -309,7 +311,7 @@ router.get('/getByDietType', async (req, res) => {
 //localhost:8000/itemList/getByMealType?mealType=Lunch&&username=ssetty (get)
 
 router.get('/getByMealType', async (req, res) => {
-  // console.log("reached")
+  console.log("reached")
   try {
     var exists = await userFavourites.find({ username: req.query.username }, { bookmarks: 1 })
     // console.log("exists", exists)
@@ -318,6 +320,7 @@ router.get('/getByMealType', async (req, res) => {
       mealTypeItem = await itemsSchema.find().lean()
       mealTypeItem.forEach(x => {
         // console.log("meal type for loop")
+        x['image'] =  fileToBase64(x['image']) 
         if (exists[0].bookmarks.includes(x._id)) {
           x['isLiked'] = 1
         }
@@ -338,6 +341,7 @@ router.get('/getByMealType', async (req, res) => {
       // mealTypeItem = await itemsSchema.find().lean()
       mealTypeItem.forEach(x => {
         // console.log("meal type for loop")
+        x['image'] =  fileToBase64(x['image']) 
         if (exists[0].bookmarks.includes(x._id)) {
           x['isLiked'] = 1
         }
@@ -360,30 +364,30 @@ router.get('/getByMealType', async (req, res) => {
 
 //localhost:8000/itemList/getByFilterData  (post)
 
-// var fs = require('fs');
-// const { constants } = require('buffer');
-// const { array } = require('../middleware/upload');
-// const { isArray } = require('util');
-// const { get } = require('mongoose');
-// const { Z_ASCII } = require('zlib');
-// const { RSA_NO_PADDING } = require('constants');
+var fs = require('fs');
+const { constants } = require('buffer');
+const { array } = require('../middleware/upload');
+const { isArray } = require('util');
+const { get } = require('mongoose');
+const { Z_ASCII } = require('zlib');
+const { RSA_NO_PADDING } = require('constants');
 
-// function fileToBase64(filename) {
-//   if (filename !== undefined && filename !== null) {
-//     // var filename = filename;
-//     // console.log(filename)
-//     var binaryData = fs.readFileSync(filename)
-//     var base64String = new Buffer.from(binaryData).toString("base64")
-//     // console.log(base64String)  
-
-
-//     // base64_s.push(base64String)
-//     // console.log(base64String)
-//     return base64String
-//   }
+function fileToBase64(filename) {
+  if (filename !== undefined && filename !== null) {
+    // var filename = filename;
+    // console.log(filename,__dirname)
+    var binaryData = fs.readFileSync(filename)
+    var base64String = new Buffer.from(binaryData).toString("base64")
+    // console.log(base64String)  
 
 
-// }
+    // base64_s.push(base64String)
+    // console.log(base64String)
+    return base64String
+  }
+
+
+}
 
 
 
@@ -406,7 +410,8 @@ router.post('/getByFilterData', async (req, res) => {
     // }
     console.log("query1")
     let mealTypeItem = []
-    mealTypeItem = await itemsSchema.find(query, { image: 0 }).lean();
+    mealTypeItem = await itemsSchema.find(query).lean();
+    
     // if (req.body.isFav == "true") {
     //   const favResult = await userFavourites.find({ username: req.body.userName })
     //   // console.log('favResult', favResult[0].favourites);
@@ -427,7 +432,14 @@ router.post('/getByFilterData', async (req, res) => {
 
     // mealItems[0].test = 'sampletext'
     // console.log("meal items ---->",mealItems);
-    mealTypeItem.forEach(x => {
+    // getAllItemsList.map(data => {
+    //   data["image"] = fileToBase64(`${imagePath}/${data.title}+.jpg`)
+    //   })
+
+    mealTypeItem.forEach(async x => {
+      // let newImage = `uploadsFolder/${x.title}.jpg`
+      // x['isLiked'] = 0
+      x["image"] = fileToBase64(x['image'])
       if (exists[0].bookmarks.includes(x._id)) {
         x['isLiked'] = 1
       }
@@ -435,16 +447,17 @@ router.post('/getByFilterData', async (req, res) => {
         x['isLiked'] = 0
       }
 
-
-      // console.log("new ssssssssssssssssssssx",x)
+      // await itemsSchema.update({_id:x._id},{image:newImage})
+      // console.log("new ssssssssssssssssssssx",newImage)
     })
-
+    
     console.log("before response")
 
     res.json(mealTypeItem);
   }
   // }
   catch (err) {
+    console.log("base 64",err.message)
     res.json({ allFilters: [] })
   }
 });
@@ -578,10 +591,12 @@ router.post('/deleteCartArray', async (req, res) => {
           date: req.body.date
         })
         // console.log("my orders",myOrders)
+
         let result = await myOrders.save()
+        const timestamp  =  moment(Date.now()).tz("Asia/Kolkata").format().split("+")[0];
         response = { result, totalDeductedPoints, message: "Order Placed Successfully" }
         updatedPoints = orderDetails.points - totalDeductedPoints
-        const userPoints = await userFavourites.updateOne({ 'employeeID': req.body.employeeID }, { points: updatedPoints });
+        await userFavourites.updateOne({ 'employeeID': req.body.employeeID }, { points: updatedPoints });
 
        
         const userPassBook = await passBookSchema.update({employeeID:req.body.employeeID},{
@@ -698,7 +713,7 @@ router.get('/getAllCart', async (req, res) => {
           points: itemData.points,
           title: itemData.title,
           likes: itemData.likes,
-          image: itemData.image,
+          image: fileToBase64(itemData.image),
           quantity: cartArray[index].quantity,
           totalPoints: itemData.points * cartArray[index].quantity
         })
