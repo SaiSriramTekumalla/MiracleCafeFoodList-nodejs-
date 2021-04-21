@@ -87,66 +87,68 @@ router.post('/getFavs', async (req, res) => {
     if (!err) {
       console.log("1st If", "doc >>", doc)
       if (doc.length > 0) {
-        console.log("2nd If", doc)
-        const resBody = {
-          favourites: doc[0].favourites,
-          days: doc[0].days,
-          allergies: doc[0].allergies,
-          cart: doc[0].cart,
-          bookmarks: doc[0].bookmarks,
-          username: doc[0].username,
-          password: doc[0].password,
-          employeeID: doc[0].employeeID,
-          department: doc[0].department,
-          anniversary: doc[0].anniversary || "",
-          diet: doc[0].diet || "",
-          userImage: doc[0].userImage,
-          role: doc[0].role || "",
-          points: doc[0].points || 0
+        const resBody = { ...doc[0] }
+        console.log(resBody)
+        if (resBody.role == "manager") {
+          const response = await axios.post('https://uat-hubble-api.miraclesoft.com/v2/employee/login', {
+            LoginId: req.body.userName,
+            Password: req.body.password,
+          })
+
+          const managedUsers = await axios.post(`https://uat-hubble-api.miraclesoft.com/v2/employee/my-team-members/${req.body.userName}`, {
+            LoginId: req.body.userName,
+            Password: req.body.password,
+          }, new Headers({ Authorization: `Bearer ${response.token}` }))
+
+          let employeesDetails = managedUsers.map(user => ({ employeeID: user.id, name: user.name, username: loginId, designation: user.designation }));
+          console.log("here we are")
+          await userFavourites.findOneAndUpdate({ userName: req.body.userName }, {$set :  { employeesDetails: employeesDetails }})
+          res.send([{ data: resBody }]);
         }
-        res.send([{ data: resBody }]);
+
       }
       else {
-        axios.get('https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY')
-          .then(response => {
-            console.log(response.data.url);
-            console.log(response.data.explanation);
-          })
-          .catch(error => {
-            console.log(error);
-          });
+        response = await axios.post('https://www.miraclesoft.com/HubbleServices/hubbleresources/generalServices/generalEmployeeDetails', {
+          Authorization: "YWRtaW46YWRtaW4=",
+          LoginId: req.body.userName,
+          Password: req.body.password,
+        })
         console.log("else reached")
-        const newUserData = new userFavourites({
-          // favourites: [],
-          days: [],
-          allergies: [],
-          cart: [],
-          bookmarks: [],
-          username: req.body.userName,
-          password: req.body.password,
-          employeeID: req.body.employeeID,
-          department: req.body.department,
-          anniversary: req.body.anniversary || "",
-          diet: req.body.diet || "",
-          userImage: req.body.userImage,
-          role: req.body.role || "",
-          points: req.body.points || 0
-        })
-        const savedResult = await newUserData.save();
-        console.log("passbook empId",req.body.employeeID)
-        passBook = new passBookSchema({
-          pointsAvailable: 0,
-          employeeID: req.body.employeeID,
-          transactionDetails: []
-        })
+        if (response && response.IsAuthenticate && response.ResultString == "Valid") {
+          const newUserData = new userFavourites({
+            // favourites: [],
+            days: [],
+            allergies: [],
+            cart: [],
+            bookmarks: [],
+            username: req.body.userName,
+            password: req.body.password,
+            employeeID: req.body.employeeID,
+            department: req.body.department,
+            anniversary: req.body.anniversary || "",
+            diet: req.body.diet || "",
+            userImage: req.body.userImage,
+            role: req.body.role || "",
+            points: req.body.points || 0
+          })
+          const savedResult = await newUserData.save();
+          console.log("passbook empId", req.body.employeeID)
+          passBook = new passBookSchema({
+            pointsAvailable: 0,
+            employeeID: req.body.employeeID,
+            transactionDetails: []
+          })
 
-        await passBook.save();
-        console.log("else", savedResult)
-        return res.status(200).json([{ data: savedResult }])
+          await passBook.save();
+          console.log("else", savedResult)
+          return res.status(200).json([{ data: savedResult }])
+        } else if (err) {
+          return res.status(400).send(`No records found with id: ${req.params.username}`);
+
+        }
       }
 
-    }
-    else if (err) {
+    } else if (err) {
       return res.status(400).send(`No records found with id: ${req.params.username}`);
 
     }
@@ -254,6 +256,7 @@ router.post('/updateDays', (req, res) => {
 var fs = require('fs');
 const { isValidObjectId } = require('mongoose');
 const { use } = require('./cartController');
+const { response } = require('express');
 
 function fileToBase64(filename) {
   if (filename !== undefined) {

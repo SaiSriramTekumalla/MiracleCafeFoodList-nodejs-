@@ -525,22 +525,22 @@ router.put('/updateCart', async (req, res) => {
 
   // console.log('req.body cart', req.body);
   // userFavourites.updateOne({ "username": name }, { $set: { "favourites": favourites, "allergies": allergies, "days": days, "diet": diet, "points": points } },
-  var userCart = await cart.findOne({ employeeID: req.body.employeeID })
-  if(userCart && userCart.cartArray)
-  {
-    userCart.cartArray.filter(x => {
-      // console.log("ssfsdfwerwerwer",x.itemId,req.body.itemI)
-      if (x.itemId == req.body.itemId) {
-        // console.log("iffff")
-        x.quantity = req.body.quantity
-        // console.log("sfasdf", x)
-      }
-      return x;
-    })
+  // var userCart = await cart.findOne({ employeeID: req.body.employeeID })
+  // if(userCart && userCart.cartArray)
+  // {
+  //   userCart.cartArray.filter(x => {
+  //     // console.log("ssfsdfwerwerwer",x.itemId,req.body.itemI)
+  //     if (x.itemId == req.body.itemId) {
+  //       // console.log("iffff")
+  //       x.quantity = req.body.quantity
+  //       // console.log("sfasdf", x)
+  //     }
+  //     return x;
+  //   })
   
     // console.log("userrrrrrrrrrrrrrr",userCart[0].cartArray)
-    await cart.findOneAndUpdate({ employeeID: req.body.employeeID }, { cartArray: userCart[0].cartArray })
-  }
+    await cart.updateOne({ employeeID: req.body.employeeID, itemId: req.body.itemId }, { quantity: req.body.quantity })
+  // }
 
   // console.log("userCarttttttttttttt", userCart)
   res.json({ success: "Cart Updated Successfully", data: userCart })
