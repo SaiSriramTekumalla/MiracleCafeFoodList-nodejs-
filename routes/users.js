@@ -87,9 +87,10 @@ router.post('/getFavs', async (req, res) => {
     if (!err) {
       console.log("1st If", "doc >>", doc)
       if (doc.length > 0) {
-        const resBody = { ...doc[0] }
+      console.log(doc)
+        const resBody = doc[0] 
         console.log(resBody)
-        if (resBody.role == "manager") {
+        if (resBody && resBody.role == "manager") {
           const response = await axios.post('https://uat-hubble-api.miraclesoft.com/v2/employee/login', {
             LoginId: req.body.userName,
             Password: req.body.password,
