@@ -64,6 +64,18 @@ router.get('/getPassBook/:empId', async (req, res) => {
   }
 });
 
+router.get('/getOrderDetails/:orderId', async (req, res) => {
+
+  try {
+    console.log("Order Id", req.params.orderId)
+    var userPassBook = await ordersSchema.findOne({ employeeID: req.params.orderId })
+    res.json({ userPassBook })
+  }
+  catch (err) {
+    console.log(err.message)
+    res.json([])
+  }
+});
 
 // localhost:8000/itemList/allEmployees
 router.get('/allEmployees', async (req, res) => {
@@ -371,6 +383,7 @@ const { isArray } = require('util');
 const { get } = require('mongoose');
 const { Z_ASCII } = require('zlib');
 const { RSA_NO_PADDING } = require('constants');
+const ordersSchema = require('../models/ordersSchema');
 
 function fileToBase64(filename) {
   if (filename !== undefined && filename !== null) {
