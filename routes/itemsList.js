@@ -625,7 +625,6 @@ router.post('/deleteCartArray', async (req, res) => {
               "transactionReason" : "Order Placed",
               "transactionDetails":req.body.cartDetails,
               "timestamp": timestamp,
-              "Order_Id": result._id
             }
           ]
              }
@@ -689,7 +688,7 @@ router.get('/getOrders', async (req, res) => {
     }
 
 
-  })
+  }).sort({"date":-1})
 })
 
 router.post('/deleteCartItem', (req, res) => {
