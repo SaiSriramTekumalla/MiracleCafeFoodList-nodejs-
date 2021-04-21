@@ -79,7 +79,7 @@ router.post('/getFavs', async (req, res) => {
   console.log("reqBody", req.body)
   var name = req.body.userName;
   var password = req.body.password;
-
+console.log(name, password)
   let resBody = await userFavourites.findOne({ $and: [{ username: name }, { password: password }] })
 
       console.log("1st If", "doc >>", resBody)
