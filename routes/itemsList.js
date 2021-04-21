@@ -623,7 +623,7 @@ router.post('/deleteCartArray', async (req, res) => {
               "pointsSpent": totalDeductedPoints,
               "transactionType"  : "Debit",
               "transactionReason" : req.body.cartDetails,
-              "timestamp": timestamp,
+              "timestamp": timestamp.split("T").join(" "),
               "Order_Id": result._id
             }
           ]
