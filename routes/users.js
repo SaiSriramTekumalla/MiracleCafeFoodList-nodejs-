@@ -83,12 +83,12 @@ router.post('/getFavs', async (req, res) => {
 
 
 
-  userFavourites.find({ $and: [{ username: name }, { password: password }] }, async (err, doc) => {
-    if (!err) {
-      console.log("1st If", "doc >>", doc)
-      if (doc.length > 0) {
-      console.log(doc)
-        const resBody = doc[0] 
+  let userData = await userFavourites.findOne({ $and: [{ username: name }, { password: password }] })
+
+      console.log("1st If", "doc >>", userData)
+      if (userData.length > 0) {
+   
+        const resBody = userData
         console.log(resBody)
         if (resBody && resBody.role == "manager") {
           const response = await axios.post('https://uat-hubble-api.miraclesoft.com/v2/employee/login', {
@@ -148,12 +148,6 @@ router.post('/getFavs', async (req, res) => {
 
         }
       }
-
-    } else if (err) {
-      return res.status(400).send(`No records found with id: ${req.params.username}`);
-
-    }
-  });
 
 
 });
