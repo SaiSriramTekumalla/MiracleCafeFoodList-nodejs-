@@ -606,7 +606,7 @@ router.post('/deleteCartArray', async (req, res) => {
         // console.log("my orders",myOrders)
 
         let result = await myOrders.save()
-        const timestamp  =  moment(Date.now()).tz("Asia/Kolkata").format().split("+")[0];
+        const timestamp  =  moment(Date.now()).tz("Asia/Kolkata").format().split("+")[0].split("T").join(" ");
         response = { result, totalDeductedPoints, message: "Order Placed Successfully" }
         updatedPoints = orderDetails.points - totalDeductedPoints
         await userFavourites.updateOne({ 'employeeID': req.body.employeeID }, { points: updatedPoints });
@@ -622,8 +622,9 @@ router.post('/deleteCartArray', async (req, res) => {
             {
               "pointsSpent": totalDeductedPoints,
               "transactionType"  : "Debit",
-              "transactionReason" : req.body.cartDetails,
-              "timestamp": timestamp.split("T").join(" "),
+              "transactionReason" : "Order Placed",
+              "transactionDetails":req.body.cartDetails,
+              "timestamp": timestamp,
               "Order_Id": result._id
             }
           ]
