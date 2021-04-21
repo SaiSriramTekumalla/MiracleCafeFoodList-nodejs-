@@ -63,7 +63,6 @@ router.post('/updateBookmarks', async (req, res) => {
       if (!err) {
         console.log(doc)
         res.send(doc)
-
       }
       else {
         console.log('Not updated' + JSON.stringify(err, undefined, 2));
@@ -81,15 +80,11 @@ router.post('/getFavs', async (req, res) => {
   var name = req.body.userName;
   var password = req.body.password;
 
-
-
-  let userData = await userFavourites.findOne({ $and: [{ username: name }, { password: password }] })
+  let resBody = await userFavourites.findOne({ $and: [{ username: name }, { password: password }] })
 
       console.log("1st If", "doc >>", userData)
-      if (userData.length > 0) {
+      if (resBody.length > 0) {
    
-        const resBody = userData
-        console.log(resBody)
         if (resBody && resBody.role == "manager") {
           const response = await axios.post('https://uat-hubble-api.miraclesoft.com/v2/employee/login', {
             LoginId: req.body.userName,
