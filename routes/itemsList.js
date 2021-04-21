@@ -64,18 +64,18 @@ router.get('/getPassBook/:empId', async (req, res) => {
   }
 });
 
-router.get('/getOrderDetails/:orderId', async (req, res) => {
+// router.get('/getOrderDetails/:orderId', async (req, res) => {
 
-  try {
-    console.log("Order Id", req.params.orderId)
-    var userPassBook = await ordersSchema.findOne({ employeeID: req.params.orderId })
-    res.json({ userPassBook })
-  }
-  catch (err) {
-    console.log(err.message)
-    res.json([])
-  }
-});
+//   try {
+//     console.log("Order Id", req.params.orderId)
+//     var userPassBook = await ordersSchema.findOne({ employeeID: req.params.orderId })
+//     res.json({ userPassBook })
+//   }
+//   catch (err) {
+//     console.log(err.message)
+//     res.json([])
+//   }
+// });
 
 // localhost:8000/itemList/allEmployees
 router.get('/allEmployees', async (req, res) => {
@@ -581,7 +581,7 @@ router.post('/deleteCartArray', async (req, res) => {
   try {
 
 
-    let response, myOrders, passBook, availablePoints;
+    let response, myOrders, availablePoints;
     const orderDetails = await userFavourites.findOne({ 'employeeID': req.body.employeeID }, { points: 1 });
 
     if (orderDetails.points >= totalDeductedPoints) {
@@ -622,7 +622,7 @@ router.post('/deleteCartArray', async (req, res) => {
             {
               "pointsSpent": totalDeductedPoints,
               "transactionType"  : "Debit",
-              "transactionReason" : "Order Placed",
+              "transactionReason" : req.body.cartDetails,
               "timestamp": timestamp,
               "Order_Id": result._id
             }
