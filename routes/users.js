@@ -76,7 +76,7 @@ router.post('/updateBookmarks', async (req, res) => {
 
 
 router.post('/getFavs', async (req, res) => {
-  // console.log("reqBody", req.body)
+  console.log("reqBody", req.body)
   var name = req.body.userName;
   var password = req.body.password;
   let resBody;
