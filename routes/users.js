@@ -139,7 +139,7 @@ router.post('/getFavs', async (req, res) => {
       console.log("else", savedResult)
       return res.status(200).json([{ data: savedResult }])
     } else {
-      return res.status(400).send(`No records found with id: ${req.params.username}`);
+      return res.status(400).send(`No records found with id: ${req.body.userName}`);
 
     }
   }
