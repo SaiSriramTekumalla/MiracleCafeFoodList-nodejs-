@@ -76,13 +76,14 @@ router.post('/updateBookmarks', async (req, res) => {
 
 
 router.post('/getFavs', async (req, res) => {
-  console.log("reqBody", req.body)
+try {
+  // console.log("reqBody", req.body)
   var name = req.body.userName;
   var password = req.body.password;
   let resBody;
   let resdata = await userFavourites.find({ $and: [{ username: name }, { password: password }] })
 
-  console.log("1st If", "doc >>", resdata)
+  // console.log("1st If", "doc >>", resdata)
   if (resdata.length > 0) {
     resBody = resdata[0];
     if (resBody && resBody.role == "manager") {
@@ -90,11 +91,13 @@ router.post('/getFavs', async (req, res) => {
         LoginId: req.body.userName,
         Password: req.body.password,
       })
+      console.log("response", response)
+      console.log(`https://uat-hubble-api.miraclesoft.com/v2/employee/my-team-members/${req.body.userName}`)
 
       const managedUsers = await axios.post(`https://uat-hubble-api.miraclesoft.com/v2/employee/my-team-members/${req.body.userName}`, {
         LoginId: req.body.userName,
         Password: req.body.password,
-      }, new Headers({ Authorization: `Bearer ${response.token}` }))
+      }, { headers: { 'Authorization': `Bearer ${response.token}` } })
 
       let employeesDetails = managedUsers.map(user => ({ employeeID: user.id, name: user.name, username: loginId, designation: user.designation }));
       console.log("here we are")
@@ -102,7 +105,7 @@ router.post('/getFavs', async (req, res) => {
 
     }
     console.log("............................IF resopnse..............................")
-  return res.status(200).json([{ data: resBody }])
+    return res.status(200).json([{ data: resBody }])
   }
   else {
     let response = await axios.post('https://www.miraclesoft.com/HubbleServices/hubbleresources/generalServices/generalEmployeeDetails', {
@@ -138,7 +141,7 @@ router.post('/getFavs', async (req, res) => {
 
       await passBook.save();
       // console.log("else", savedResult)
-          console.log("............................Else resopnse..............................")
+      console.log("............................Else resopnse..............................")
       return res.status(200).json([{ data: savedResult }])
     } else {
       return res.status(400).send(`No records found with id: ${req.body.userName} or invalid credentails`);
@@ -146,6 +149,9 @@ router.post('/getFavs', async (req, res) => {
   }
 
 
+} catch (error) {
+  return res.status(500).send(`Failed due to ${error.message}`);
+}
 });
 
 //  localhost:8000/users/updateRewards
