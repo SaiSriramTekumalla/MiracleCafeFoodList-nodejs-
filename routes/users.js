@@ -101,6 +101,7 @@ router.post('/getFavs', async (req, res) => {
       await userFavourites.findOneAndUpdate({ userName: req.body.userName }, { $set: { employeesDetails: employeesDetails } })
 
     }
+    console.log("............................IF resopnse..............................")
   return res.status(200).json([{ data: savedResult }])
   }
   else {
