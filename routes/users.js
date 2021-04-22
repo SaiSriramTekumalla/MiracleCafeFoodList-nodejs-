@@ -99,9 +99,9 @@ router.post('/getFavs', async (req, res) => {
       let employeesDetails = managedUsers.map(user => ({ employeeID: user.id, name: user.name, username: loginId, designation: user.designation }));
       console.log("here we are")
       await userFavourites.findOneAndUpdate({ userName: req.body.userName }, { $set: { employeesDetails: employeesDetails } })
-      res.send([{ data: resBody }]);
-    }
 
+    }
+  return res.status(200).json([{ data: savedResult }])
   }
   else {
     let response = await axios.post('https://www.miraclesoft.com/HubbleServices/hubbleresources/generalServices/generalEmployeeDetails', {
