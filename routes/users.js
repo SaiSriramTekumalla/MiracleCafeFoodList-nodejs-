@@ -117,6 +117,7 @@ router.post('/getFavs', async (req, res) => {
       })
       // console.log("else reached", response)
       if (response && response.data.IsAuthenticate && response.data.ResultString == "Valid") {
+        let data = response.data;
         const newUserData = new userFavourites({
           // favourites: [],
           days: [],
@@ -125,19 +126,19 @@ router.post('/getFavs', async (req, res) => {
           bookmarks: [],
           username: req.body.userName,
           password: req.body.password,
-          employeeID: req.body.employeeID,
-          department: req.body.department,
-          anniversary: req.body.anniversary || "",
-          diet: req.body.diet || "",
-          userImage: req.body.userImage,
-          role: req.body.role || "",
-          points: req.body.points || 0
+          employeeID: data.EmpId,
+          department: data.department,
+          anniversary: data.anniversary || "",
+          diet: data.diet || "",
+          userImage: data.userImage,
+          role: data.role || "",
+          points: data.points || 0
         })
         const savedResult = await newUserData.save();
         // console.log("passbook empId", req.body.employeeID)
         passBook = new passBookSchema({
           pointsAvailable: 0,
-          employeeID: req.body.employeeID,
+          employeeID: data.EmpId,
           transactionDetails: []
         })
 
