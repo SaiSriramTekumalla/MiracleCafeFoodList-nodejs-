@@ -80,9 +80,9 @@ router.post('/getFavs', async (req, res) => {
   var name = req.body.userName;
   var password = req.body.password;
   // console.log(name, password)
-  let resdata = await userFavourites.findOne({ $and: [{ username: name }, { password: password }] })
+  let resdata = await userFavourites.find({ $and: [{ username: name }, { password: password }] })
 
-  // console.log("1st If", "doc >>", resdata)
+  console.log("1st If", "doc >>", resdata)
   if (resdata.length > 0) {
     let resBody = resdata[0];
     if (resBody && resBody.role == "manager") {
