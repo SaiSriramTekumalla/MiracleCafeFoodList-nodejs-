@@ -80,11 +80,11 @@ router.post('/getFavs', async (req, res) => {
   var name = req.body.userName;
   var password = req.body.password;
 console.log(name, password)
-  let resBody = await userFavourites.findOne({ $and: [{ username: name }, { password: password }] })
+  let resdata = await userFavourites.findOne({ $and: [{ username: name }, { password: password }] })
 
       console.log("1st If", "doc >>", resBody)
-      if (resBody.length > 0) {
-   
+      if (resdata.length > 0) {
+      let resBody = resdata[0];
         if (resBody && resBody.role == "manager") {
           const response = await axios.post('https://uat-hubble-api.miraclesoft.com/v2/employee/login', {
             LoginId: req.body.userName,
@@ -104,7 +104,7 @@ console.log(name, password)
 
       }
       else {
-        response = await axios.post('https://www.miraclesoft.com/HubbleServices/hubbleresources/generalServices/generalEmployeeDetails', {
+        let response = await axios.post('https://www.miraclesoft.com/HubbleServices/hubbleresources/generalServices/generalEmployeeDetails', {
           Authorization: "YWRtaW46YWRtaW4=",
           LoginId: req.body.userName,
           Password: req.body.password,
