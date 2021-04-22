@@ -110,7 +110,7 @@ router.post('/getFavs', async (req, res) => {
       Password: req.body.password,
     })
     console.log("else reached", response)
-    if (response && response.IsAuthenticate && response.ResultString == "Valid") {
+    if (response && response.data.IsAuthenticate && response.data.ResultString == "Valid") {
       const newUserData = new userFavourites({
         // favourites: [],
         days: [],
