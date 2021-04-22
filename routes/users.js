@@ -79,12 +79,12 @@ router.post('/getFavs', async (req, res) => {
   // console.log("reqBody", req.body)
   var name = req.body.userName;
   var password = req.body.password;
-  // console.log(name, password)
+  let resBody;
   let resdata = await userFavourites.find({ $and: [{ username: name }, { password: password }] })
 
   console.log("1st If", "doc >>", resdata)
   if (resdata.length > 0) {
-    let resBody = resdata[0];
+    resBody = resdata[0];
     if (resBody && resBody.role == "manager") {
       const response = await axios.post('https://uat-hubble-api.miraclesoft.com/v2/employee/login', {
         LoginId: req.body.userName,
@@ -102,7 +102,7 @@ router.post('/getFavs', async (req, res) => {
 
     }
     console.log("............................IF resopnse..............................")
-  return res.status(200).json([{ data: savedResult }])
+  return res.status(200).json([{ data: resBody }])
   }
   else {
     let response = await axios.post('https://www.miraclesoft.com/HubbleServices/hubbleresources/generalServices/generalEmployeeDetails', {
