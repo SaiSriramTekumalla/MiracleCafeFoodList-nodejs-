@@ -76,13 +76,13 @@ router.post('/updateBookmarks', async (req, res) => {
 
 
 router.post('/getFavs', async (req, res) => {
-  console.log("reqBody", req.body)
+  // console.log("reqBody", req.body)
   var name = req.body.userName;
   var password = req.body.password;
-  console.log(name, password)
+  // console.log(name, password)
   let resdata = await userFavourites.findOne({ $and: [{ username: name }, { password: password }] })
 
-  console.log("1st If", "doc >>", resdata)
+  // console.log("1st If", "doc >>", resdata)
   if (resdata.length > 0) {
     let resBody = resdata[0];
     if (resBody && resBody.role == "manager") {
@@ -110,7 +110,7 @@ router.post('/getFavs', async (req, res) => {
       LoginId: req.body.userName,
       Password: req.body.password,
     })
-    console.log("else reached", response)
+    // console.log("else reached", response)
     if (response && response.data.IsAuthenticate && response.data.ResultString == "Valid") {
       const newUserData = new userFavourites({
         // favourites: [],
@@ -129,7 +129,7 @@ router.post('/getFavs', async (req, res) => {
         points: req.body.points || 0
       })
       const savedResult = await newUserData.save();
-      console.log("passbook empId", req.body.employeeID)
+      // console.log("passbook empId", req.body.employeeID)
       passBook = new passBookSchema({
         pointsAvailable: 0,
         employeeID: req.body.employeeID,
@@ -137,7 +137,8 @@ router.post('/getFavs', async (req, res) => {
       })
 
       await passBook.save();
-      console.log("else", savedResult)
+      // console.log("else", savedResult)
+          console.log("............................Else resopnse..............................")
       return res.status(200).json([{ data: savedResult }])
     } else {
       return res.status(400).send(`No records found with id: ${req.body.userName}`);
