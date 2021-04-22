@@ -141,7 +141,7 @@ router.post('/getFavs', async (req, res) => {
           console.log("............................Else resopnse..............................")
       return res.status(200).json([{ data: savedResult }])
     } else {
-      return res.status(400).send(`No records found with id: ${req.body.userName}`);
+      return res.status(400).send(`No records found with id: ${req.body.userName} or invalid credentails`);
     }
   }
 
