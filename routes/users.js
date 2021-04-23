@@ -4,6 +4,7 @@ const userFavourites = require('../models/userFavourites');
 const upload = require('../middleware/upload');
 const rewardsSchema = require('../models/rewardsSchema');
 const itemsSchema = require('../models/itemsSchema');
+const managerSchema = require('../models/managerSchema');
 const axios = require('axios');
 const passBookSchema = require('../models/passbookSchema')
 
@@ -74,7 +75,7 @@ router.post('/updateBookmarks', async (req, res) => {
   }
 });
 
-
+//  localhost:8000/users/  
 router.post('/getFavs', async (req, res) => {
   try {
     // console.log("reqBody", req.body)
@@ -100,11 +101,9 @@ router.post('/getFavs', async (req, res) => {
         const employeesDetails = managedUsers.data.data.map(user => ({ employeeID: user.id, name: user.name, username: user.loginId, designation: user.designation }));
         // console.log("here we are", employeesDetails)
         await userFavourites.updateMany({ username: req.body.userName }, { $set: { "employeesDetails": employeesDetails } }, {
-          upsert: false,
+          upsert: true,
           multi: false
         })
-
-
       }
       console.log("............................IF resopnse..............................")
       return res.status(200).json([{ data: resBody }])
@@ -143,6 +142,15 @@ router.post('/getFavs', async (req, res) => {
         })
 
         await passBook.save();
+        // const employeesDetails = managedUsers.data.data.map(user => ({ employeeID: user.id, name: user.name, username: user.loginId, designation: user.designation }));
+        // if(employeesDetails)
+        // {
+        //   await managerSchema.update({},{$push:{
+        //     employeesDetails:'',
+        //     totalPoints:0
+        //   }})
+        // }
+      
         // console.log("else", savedResult)
         console.log("............................Else resopnse..............................")
         return res.status(200).json([{ data: savedResult }])
@@ -159,12 +167,35 @@ router.post('/getFavs', async (req, res) => {
 
 //  localhost:8000/users/updateRewards
 
-router.post('/updateRewards', (req, res) => {
+router.post('/updateRewards', async (req, res) => {
   console.log("req body", req.body)
   var modelObject = {
     employeeID: req.body.employeeID,
-    points: req.body.points
+    points: req.body.points,
+  
   };
+  const userPoints = await userFavourites.findOne({ 'employeeID': req.body.employeeID }, { points: 1 });
+let availablePoints = userPoints - req.body.points
+const timestamp  =  moment(Date.now()).tz("Asia/Kolkata").format("DD/MM/YYYY h:mm A")
+  const userPassBook = await passBookSchema.update({employeeID:req.body.employeeID},{
+          
+    $set:{
+    pointsAvailable:availablePoints
+     },
+     $push:{
+            transactionDetails:[
+    {
+      "pointsSpent": req.body.points,
+      "transactionType"  : "Debit",
+      "transactionReason" : "Order Placed",
+      "transactionDetails":'',
+      "timestamp": timestamp,
+    }
+  ]
+     }
+    
+    })
+
   userFavourites.findOneAndUpdate({ "employeeID": req.body.employeeID }, { $set: modelObject }, { new: true }, (err, doc) => {
     if (!err) {
       console.log(doc)
@@ -176,6 +207,7 @@ router.post('/updateRewards', (req, res) => {
     }
   });
 });
+
 
 
 
@@ -312,5 +344,30 @@ router.get('/getAllLikedItems', (req, res) => {
     res.json({ message: err.message });
   }
 })
+
+
+router.post('/getEmployees', async (req, res) => {
+
+  try {
+    const response = await axios.post('https://uat-hubble-api.miraclesoft.com/v2/employee/login', {
+      loginId: req.body.userName,
+      password: req.body.password,
+    })
+    // console.log("response", response)
+    // console.log(response.data.data.token)
+    console.log(`https://uat-hubble-api.miraclesoft.com/v2/employee/my-team-members/${req.body.userName}`)
+    // const managedUsers = await 
+    const managedUsers = await axios.get(`https://uat-hubble-api.miraclesoft.com/v2/employee/my-team-members/${req.body.userName}`, { headers: { 'Authorization': `Bearer ${response.data.data.token}` } })
+    console.log(Array.isArray(managedUsers.data.data))
+    const employeesDetails = managedUsers.data.data.map(user => ({ employeeID: user.id, name: user.name, username: user.loginId, designation: user.designation }));
+    // console.log("here we are", employeesDetails)
+    res.json({ employeesDetails })
+  }
+  catch (err) {
+    console.log(err.message)
+    res.json([])
+  }
+});
+
 
 module.exports = router;
