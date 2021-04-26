@@ -175,7 +175,8 @@ router.post('/updateRewards', async (req, res) => {
   
   };
   const userPoints = await userFavourites.findOne({ 'employeeID': req.body.employeeID }, { points: 1 });
-let availablePoints = userPoints - req.body.points
+let availablePoints = req.body.transactionType === 'Debit' ? userPoints - req.body.points : userPoints + req.body.points
+await userFavourites.findOneAndUpdate({employeeID:req.body.employeeID},{points:availablePoints})
 const timestamp  =  moment(Date.now()).tz("Asia/Kolkata").format("DD/MM/YYYY h:mm A")
   const userPassBook = await passBookSchema.update({employeeID:req.body.employeeID},{
           
@@ -349,8 +350,9 @@ router.get('/getAllLikedItems', (req, res) => {
 router.post('/getEmployees', async (req, res) => {
 
   try {
+    // console.log("login",req.body)
     const response = await axios.post('https://uat-hubble-api.miraclesoft.com/v2/employee/login', {
-      loginId: req.body.userName,
+      loginId: req.body.loginId,
       password: req.body.password,
     })
     // console.log("response", response)
@@ -358,7 +360,8 @@ router.post('/getEmployees', async (req, res) => {
     console.log(`https://uat-hubble-api.miraclesoft.com/v2/employee/my-team-members/${req.body.userName}`)
     // const managedUsers = await 
     const managedUsers = await axios.get(`https://uat-hubble-api.miraclesoft.com/v2/employee/my-team-members/${req.body.userName}`, { headers: { 'Authorization': `Bearer ${response.data.data.token}` } })
-    console.log(Array.isArray(managedUsers.data.data))
+    // console.log(Array.isArray(managedUsers.data.data))
+    // console.log("managedUsers",managedUsers.data.data)
     const employeesDetails = managedUsers.data.data.map(user => ({ employeeID: user.id, name: user.name, username: user.loginId, designation: user.designation }));
     // console.log("here we are", employeesDetails)
     res.json({ employeesDetails })
