@@ -7,7 +7,7 @@ const itemsSchema = require('../models/itemsSchema');
 const managerSchema = require('../models/managerSchema');
 const axios = require('axios');
 const passBookSchema = require('../models/passbookSchema')
-
+const moment = require('moment-timezone');
 // const fileToBase64 = require('../middleware/imageconversion');
 router.get('/getByCredentials', async (req, res) => {
   try {
@@ -103,7 +103,7 @@ router.post('/getFavs', async (req, res) => {
         await userFavourites.updateMany({ username: req.body.userName }, { $set: { "employeesDetails": employeesDetails } }, {
           upsert: true,
           multi: false
-        })
+        }).lean()
       }
       console.log("............................IF resopnse..............................")
       return res.status(200).json([{ data: resBody }])
@@ -168,17 +168,19 @@ router.post('/getFavs', async (req, res) => {
 //  localhost:8000/users/updateRewards
 
 router.post('/updateRewards', async (req, res) => {
-  console.log("req body", req.body)
+  // console.log("req body", req.body)
   var modelObject = {
     employeeID: req.body.employeeID,
     points: req.body.points,
   
   };
   const userPoints = await userFavourites.findOne({ 'employeeID': req.body.employeeID }, { points: 1 });
-let availablePoints = req.body.transactionType === 'Debit' ? userPoints - req.body.points : userPoints + req.body.points
-await userFavourites.findOneAndUpdate({employeeID:req.body.employeeID},{points:availablePoints})
+  console.log("upts",userPoints)
+let availablePoints = req.body.transactionType === 'Debit' ? userPoints.points - req.body.points : userPoints.points + req.body.points
+// console.log("ava",availablePoints)
+await userFavourites.updateOne({employeeID:req.body.employeeID},{points:availablePoints})
 const timestamp  =  moment(Date.now()).tz("Asia/Kolkata").format("DD/MM/YYYY h:mm A")
-  const userPassBook = await passBookSchema.update({employeeID:req.body.employeeID},{
+const ress = await passBookSchema.updateOne({employeeID:req.body.employeeID},{
           
     $set:{
     pointsAvailable:availablePoints
@@ -187,8 +189,8 @@ const timestamp  =  moment(Date.now()).tz("Asia/Kolkata").format("DD/MM/YYYY h:m
             transactionDetails:[
     {
       "pointsSpent": req.body.points,
-      "transactionType"  : "Debit",
-      "transactionReason" : "Order Placed",
+      "transactionType"  : req.body.transactionType,
+      "transactionReason" : req.body.transactionReason,
       "transactionDetails":'',
       "timestamp": timestamp,
     }
@@ -196,17 +198,19 @@ const timestamp  =  moment(Date.now()).tz("Asia/Kolkata").format("DD/MM/YYYY h:m
      }
     
     })
+    
+    // console.log("res",ress)
 
-  userFavourites.findOneAndUpdate({ "employeeID": req.body.employeeID }, { $set: modelObject }, { new: true }, (err, doc) => {
-    if (!err) {
-      console.log(doc)
-      res.send(doc)
+  // userFavourites.findOneAndUpdate({ "employeeID": req.body.employeeID }, { $set: modelObject }, { new: true }, (err, doc) => {
+  //   if (!err) {
+  //     console.log(doc)
+  //     res.send(doc)
 
-    }
-    else {
-      console.log('Not updated' + JSON.stringify(err, undefined, 2));
-    }
-  });
+  //   }
+  //   else {
+  //     console.log('Not updated' + JSON.stringify(err, undefined, 2));
+  //   }
+  // });
 });
 
 
