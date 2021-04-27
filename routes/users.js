@@ -87,24 +87,6 @@ router.post('/getFavs', async (req, res) => {
     // console.log("1st If", "doc >>", resdata)
     if (resdata.length > 0) {
       resBody = resdata[0];
-      if (resBody && resBody.role == "manager") {
-        const response = await axios.post('https://uat-hubble-api.miraclesoft.com/v2/employee/login', {
-          loginId: req.body.userName,
-          password: req.body.password,
-        })
-        // console.log("response", response)
-        // console.log(response.data.data.token)
-        console.log(`https://uat-hubble-api.miraclesoft.com/v2/employee/my-team-members/${req.body.userName}`)
-        // const managedUsers = await 
-        const managedUsers = await axios.get(`https://uat-hubble-api.miraclesoft.com/v2/employee/my-team-members/${req.body.userName}`, { headers: { 'Authorization': `Bearer ${response.data.data.token}` } })
-        console.log(Array.isArray(managedUsers.data.data))
-        const employeesDetails = managedUsers.data.data.map(user => ({ employeeID: user.id, name: user.name, username: user.loginId, designation: user.designation }));
-        // console.log("here we are", employeesDetails)
-        await userFavourites.updateMany({ username: req.body.userName }, { $set: { "employeesDetails": employeesDetails } }, {
-          upsert: true,
-          multi: false
-        }).lean()
-      }
       console.log("............................IF resopnse..............................")
       return res.status(200).json([{ data: resBody }])
     }
@@ -142,6 +124,18 @@ router.post('/getFavs', async (req, res) => {
         })
 
         await passBook.save();
+      
+      if (data && data.role == "manager") {
+        const response = await axios.post('https://uat-hubble-api.miraclesoft.com/v2/employee/login', {
+          loginId: req.body.userName,
+          password: req.body.password,
+        })
+        // console.log("response", response)
+        // console.log(response.data.data.token)
+        console.log(`https://uat-hubble-api.miraclesoft.com/v2/employee/my-team-members/${req.body.userName}`)
+        // const managedUsers = await 
+        const managedUsers = await axios.get(`https://uat-hubble-api.miraclesoft.com/v2/employee/my-team-members/${req.body.userName}`, { headers: { 'Authorization': `Bearer ${response.data.data.token}` } })
+        console.log(Array.isArray(managedUsers.data.data))
         const employeesDetails = managedUsers.data.data.map(user => ({ employeeID: user.id, name: user.name, username: user.loginId, designation: user.designation }));
         if (employeesDetails) {
           new managerSchema({
@@ -150,6 +144,7 @@ router.post('/getFavs', async (req, res) => {
             totalPoints: 0
           }).save()
         }
+      }
 
         // console.log("else", savedResult)
         console.log("............................Else resopnse..............................")
