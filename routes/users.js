@@ -368,8 +368,8 @@ router.post('/getEmployees', async (req, res) => {
     // // console.log("managedUsers",managedUsers.data.data)
     // const employeesDetails = managedUsers.data.data.map(user => ({ employeeID: user.id, name: user.name, username: user.loginId, designation: user.designation }));
     // console.log("here we are", employeesDetails)
-    if (req.query.title === "" || req.query.title === null) {
-      // console.log("empty search")
+    let searchKey = req.body.title;
+    if (searchKey === "" || searchKey === null) {
       managerSchema.find(function (err, docs) {
         res.json(docs)
       })
@@ -377,7 +377,7 @@ router.post('/getEmployees', async (req, res) => {
     }
     //console.log(item)
     // {$or : [{title :  fname}, { mealtype: fname },{foodtype : fname} ]}
-    managerSchema.find({ employeeDetails: {$or: [{ title: new RegExp(req.query.title, 'i') }, { content: new RegExp(req.query.title, 'i') }] }}, null, function (err, docs) {
+    managerSchema.find({managerId : req.body.employeeID},{ employeeDetails: {$or: [{ employeeID: new RegExp(searchKey, 'i') }, { username: new RegExp(searchKey, 'i') }, { name: new RegExp(searchKey, 'i') }] }}, null, function (err, docs) {
       res.json({ employeesDetails })
     })
   }
