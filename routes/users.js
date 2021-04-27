@@ -91,15 +91,18 @@ router.post('/getFavs', async (req, res) => {
       return res.status(200).json([{ data: resBody }])
     }
     else {
-      let response = await axios.post('https://www.miraclesoft.com/HubbleServices/hubbleresources/generalServices/generalEmployeeDetails', {
-        Authorization: "YWRtaW46YWRtaW4=",
-        LoginId: req.body.userName,
-        Password: req.body.password,
+      let response = await axios.post('https://uat-hubble-api.miraclesoft.com/v2/employee/login', {
+        loginId: req.body.userName,
+        password: req.body.password
       })
-      console.log("else reached", response)
-      if (response && response.data.IsAuthenticate && response.data.ResultString == "Valid") {
-        let data = response.data;
-        const newUserData = new userFavourites({
+      // console.log("else reached",  {       loginId: req.body.userName,
+      //   password: req.body.password})
+        // console.log(response.data.success)
+      if (response && response.data && response.data.success) {
+
+        let data = response.data.data;
+        console.log("daa")
+        let userData = await userFavourites.create({
           // favourites: [],
           days: [],
           allergies: [],
@@ -108,54 +111,54 @@ router.post('/getFavs', async (req, res) => {
           username: req.body.userName,
           password: req.body.password,
           employeeID: data.EmpId,
-          department: data.department,
+          department: data.Department,
           anniversary: data.anniversary || "",
           diet: data.diet || "",
-          userImage: data.userImage,
-          role: data.role || "",
-          points: data.points || 0
-        })
-        const savedResult = await newUserData.save();
-        // console.log("passbook empId", req.body.employeeID)
-        passBook = new passBookSchema({
+          userImage: data.ProfilePic,
+          role:  data.role || "",
+          points: data.points || 0,
+          IsManager: data.IsManager
+        });
+        console.log("here is okay")
+        // userFavourites.insert()
+        // .then(data => console.log(data))
+        // .catch(err => console.log(err));
+        console.log("something is fishy")
+        // console.log("passbook empId", newUserData)
+        let passBook = new passBookSchema({
           pointsAvailable: 0,
           employeeID: data.EmpId,
           transactionDetails: []
         })
 
         await passBook.save();
-      
-      if (data && data.role == "manager") {
-        const response = await axios.post('https://uat-hubble-api.miraclesoft.com/v2/employee/login', {
-          loginId: req.body.userName,
-          password: req.body.password,
-        })
-        // console.log("response", response)
-        // console.log(response.data.data.token)
-        console.log(`https://uat-hubble-api.miraclesoft.com/v2/employee/my-team-members/${req.body.userName}`)
+      console.log(data.IsManager)
+      if (data && data.IsManager) {
+        // console.log(`https://uat-hubble-api.miraclesoft.com/v2/employee/my-team-members/${req.body.userName}`)
         // const managedUsers = await 
-        const managedUsers = await axios.get(`https://uat-hubble-api.miraclesoft.com/v2/employee/my-team-members/${req.body.userName}`, { headers: { 'Authorization': `Bearer ${response.data.data.token}` } })
-        console.log(Array.isArray(managedUsers.data.data))
-        const employeesDetails = managedUsers.data.data.map(user => ({ employeeID: user.id, name: user.name, username: user.loginId, designation: user.designation }));
-        if (employeesDetails) {
-          await new managerSchema({
-            employeesDetails,
-            managerId: data.EmpId,
-            totalPoints: 0
-          }).save()
+        const managedUsers = await axios.get(`https://uat-hubble-api.miraclesoft.com/v2/employee/my-team-members/${req.body.userName}`, { headers: { 'Authorization': `Bearer ${data.token}` } })
+        // console.log(Array.isArray(managedUsers.data.data))
+        const employeesDetails = await managedUsers.data.data.map(user => ({ employeeID: user.id, name: user.name, username: user.loginId, designation: user.designation }));
+        console.log(employeesDetails.length)
+        if (employeesDetails.length > 0) {
+          await managerSchema.create({
+            employeesDetails: employeesDetails,
+            managerId: data.EmpId
+          })
         }
       }
 
         // console.log("else", savedResult)
         console.log("............................Else resopnse..............................")
-        return res.status(200).json([{ data: savedResult }])
+        return res.status(200).json([{ data: userData[0] }])
       } else {
-        return res.status(400).send(`No records found with id: ${req.body.userName} or invalid credentails`);
+        return res.status(400).send({data : `No records found with id: ${req.body.userName} or invalid credentails`});
       }
     }
 
 
   } catch (error) {
+  console.log(error)
     return res.status(500).send(`Failed due to ${error}`);
   }
 });
@@ -194,24 +197,8 @@ router.post('/updateRewards', async (req, res) => {
 
   })
 
-  // console.log("res",ress)
-
-  // userFavourites.findOneAndUpdate({ "employeeID": req.body.employeeID }, { $set: modelObject }, { new: true }, (err, doc) => {
-  //   if (!err) {
-  //     console.log(doc)
-  //     res.send(doc)
-
-  //   }
-  //   else {
-  //     console.log('Not updated' + JSON.stringify(err, undefined, 2));
-  //   }
-  // });
+  
 });
-
-
-
-
-//  localhost:8000/users/saveBookmarks
 
 router.post('/saveBookmarks', async (req, res) => {
   console.log("req", req.body.employeeID)

@@ -54,8 +54,7 @@ cart:{
 },
 role:
 {
-  type: String,
-  required: true
+  type: String
 },
 
 points:{
@@ -64,8 +63,10 @@ points:{
 },
 bookmarks:{
   type:Array,
+},
+IsManager:{
+type: Boolean
 }
-
 });
 
   module.exports = mongoose.model('FavSchema', FavSchema);

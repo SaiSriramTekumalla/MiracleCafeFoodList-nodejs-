@@ -4,7 +4,7 @@
   "description": "Miracle Cafe Food Menu With Node and Mongo",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js",
+    "start": "nodemon app.js",
     "test": "node test.js"
   },
   "author": "Jyothsna",
