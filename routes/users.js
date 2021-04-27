@@ -96,7 +96,7 @@ router.post('/getFavs', async (req, res) => {
         LoginId: req.body.userName,
         Password: req.body.password,
       })
-      // console.log("else reached", response)
+      console.log("else reached", response)
       if (response && response.data.IsAuthenticate && response.data.ResultString == "Valid") {
         let data = response.data;
         const newUserData = new userFavourites({
@@ -138,7 +138,7 @@ router.post('/getFavs', async (req, res) => {
         console.log(Array.isArray(managedUsers.data.data))
         const employeesDetails = managedUsers.data.data.map(user => ({ employeeID: user.id, name: user.name, username: user.loginId, designation: user.designation }));
         if (employeesDetails) {
-          new managerSchema({
+          await new managerSchema({
             employeesDetails,
             managerId: data.EmpId,
             totalPoints: 0
