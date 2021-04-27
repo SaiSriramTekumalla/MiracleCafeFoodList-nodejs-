@@ -373,7 +373,7 @@ router.post('/getEmployees', async (req, res) => {
     //console.log(item)
     // {$or : [{title :  fname}, { mealtype: fname },{foodtype : fname} ]}
     managerSchema.find({managerId : req.body.employeeID},{ employeeDetails: {$or: [{ employeeID: new RegExp(searchKey, 'i') }, { username: new RegExp(searchKey, 'i') }, { name: new RegExp(searchKey, 'i') }] }}, null, function (err, docs) {
-      res.json({ employeesDetails })
+      res.json({ docs })
     })
   }
   catch (err) {
