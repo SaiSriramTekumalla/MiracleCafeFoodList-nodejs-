@@ -209,8 +209,6 @@ router.get('/searchByItem', async (req, res) => {
     //console.log(item)
     // {$or : [{title :  fname}, { mealtype: fname },{foodtype : fname} ]}
     itemsSchema.find({ $or: [{ title: new RegExp(req.query.title, 'i') }, { content: new RegExp(req.query.title, 'i') }] }, null, function (err, docs) {
-
-
       // console.log(docs)
       res.json(docs)
     })

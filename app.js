@@ -7,7 +7,12 @@ const cors = require('cors');
 const PORT = process.env.PORT || 8000
 //middleware
 
-app.use(cors());
+app.use(cors({
+  "origin": "*",
+  "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
+  "preflightContinue": false,
+  "optionsSuccessStatus": 204
+}));
 // app.use(bodyParser.json());
 // var bodyParser = require('body-parser');
 //Impotring Routes
