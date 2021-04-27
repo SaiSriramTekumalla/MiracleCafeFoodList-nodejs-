@@ -349,32 +349,15 @@ router.get('/getAllLikedItems', (req, res) => {
 router.post('/getEmployees', async (req, res) => {
 
   try {
-    // console.log("login",req.body)
-    // const response = await axios.post('https://uat-hubble-api.miraclesoft.com/v2/employee/login', {
-    //   loginId: req.body.loginId,
-    //   password: req.body.password,
-    // })
-    // // console.log("response", response)
-    // // console.log(response.data.data.token)
-    // console.log(`https://uat-hubble-api.miraclesoft.com/v2/employee/my-team-members/${req.body.userName}`)
-    // // const managedUsers = await 
-    // const managedUsers = await axios.get(`https://uat-hubble-api.miraclesoft.com/v2/employee/my-team-members/${req.body.userName}`, { headers: { 'Authorization': `Bearer ${response.data.data.token}` } })
-    // // console.log(Array.isArray(managedUsers.data.data))
-    // // console.log("managedUsers",managedUsers.data.data)
-    // const employeesDetails = managedUsers.data.data.map(user => ({ employeeID: user.id, name: user.name, username: user.loginId, designation: user.designation }));
-    // console.log("here we are", employeesDetails)
     let searchKey = req.body.title;
+    let employeeDetails;
     if (searchKey === "" || searchKey === null) {
-      managerSchema.find(function (err, docs) {
-        res.json(docs)
-      })
+      employeeDetails = await managerSchema.find();
 
     }
     //console.log(item)
     // {$or : [{title :  fname}, { mealtype: fname },{foodtype : fname} ]}
-    managerSchema.find({managerId : req.body.employeeID},{ employeeDetails: {$or: [{ employeeID: new RegExp(searchKey, 'i') }, { username: new RegExp(searchKey, 'i') }, { name: new RegExp(searchKey, 'i') }] }}, null, function (err, docs) {
-      res.json({ docs })
-    })
+    employeeDetails = await managerSchema.find({managerId : req.body.employeeID},{ employeeDetails: {$or: [{ employeeID: new RegExp(searchKey, 'i') }, { username: new RegExp(searchKey, 'i') }, { name: new RegExp(searchKey, 'i') }] }}, null)
   }
   catch (err) {
     console.log(err.message)
