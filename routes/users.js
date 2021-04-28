@@ -342,11 +342,6 @@ router.post('/getEmployees', async (req, res) => {
 
     }
     else {
-
-      // employeeDetails = await managerSchema.find({ managerId: req.body.employeeID }, { employeeDetails: { $all: [{ "$elemMatch": { "employeeID": searchKey } }, { "$elemMatch": { "username": new RegExp(searchKey, 'i') } }, { "$elemMatch": { "name": new RegExp(searchKey, 'i') } }] } });
-      // employeeDetails = await managerSchema.find({
-      // $and : [{ managerId: req.body.employeeID }, {$or : [{"employeeDetails" :  { "name": new RegExp(searchKey, 'i') }}]}]
-      // })
       employeeDetails = await managerSchema.aggregate([
       {$match : {managerId: req.body.employeeID }},
       {$unwind : '$employeeDetails'},
@@ -354,7 +349,7 @@ router.post('/getEmployees', async (req, res) => {
         $or: [
             { 'employeeDetails.name': { "$regex": searchKey, $options: 'xi' } },
             { 'employeeDetails.username': { "$regex": searchKey, $options: 'xi' } },
-            { 'employeeDetails.employeeID': searchKey }
+            { 'employeeDetails.employeeID': { "$regex": searchKey, $options: 'xi' }}
         ]
     }}
       ])
