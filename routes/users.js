@@ -141,10 +141,10 @@ router.post('/getFavs', async (req, res) => {
         const employeesDetails = await managedUsers.data.data.map(user => ({ employeeID: user.id, name: user.name, username: user.loginId, designation: user.designation }));
         console.log(employeesDetails.length)
         if (employeesDetails.length > 0) {
-          await managerSchema.create({
-            employeesDetails: employeesDetails,
+          await new managerSchema({
+            employeeDetails:employeesDetails,
             managerId: data.EmpId
-          })
+          }).save()
         }
       }
 

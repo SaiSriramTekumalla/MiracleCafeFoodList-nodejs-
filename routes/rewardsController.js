@@ -20,19 +20,19 @@ router.get('/allRewards', async (req, res) => {
 
 //localhost:8000/rewards/postRewards  (post)       [Insert menu Items]
 
-router.post('/postRewards', async (req, res) => {
-    console.log(req.body);
-    const postAllItemList = new rewards({
-        category: req.body.category,
-        points: req.body.points
-    })
-    try {
-      const savedList = await postAllItemList.save();
-      res.json(savedList);
-    }
-    catch (err) {
-      res.json({ message: err });
-    }
-  });
+// router.post('/postRewards', async (req, res) => {
+//     console.log(req.body);
+//     const postAllItemList = new rewards({
+//         category: req.body.category,
+//         points: req.body.points
+//     })
+//     try {
+//       const savedList = await postAllItemList.save();
+//       res.json(savedList);
+//     }
+//     catch (err) {
+//       res.json({ message: err });
+//     }
+//   });
 
 module.exports = router;
