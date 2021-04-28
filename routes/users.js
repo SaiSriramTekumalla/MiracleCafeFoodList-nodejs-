@@ -95,11 +95,11 @@ router.post('/getFavs', async (req, res) => {
         loginId: req.body.userName,
         password: req.body.password
       })
-      
+
       if (response && response.data && response.data.success) {
 
         let data = response.data.data;
-  
+
         let userData = await userFavourites.create({
           // favourites: [],
           days: [],
@@ -113,7 +113,7 @@ router.post('/getFavs', async (req, res) => {
           anniversary: data.anniversary || "",
           diet: data.diet || "",
           userImage: data.ProfilePic,
-          role:  data.IsManager ? "manager" : req.body.userName == "admin" ? "owner" : "employee",
+          role: data.IsManager ? "manager" : req.body.userName == "admin" ? "owner" : "employee",
           points: data.points || 0,
           IsManager: data.IsManager
         });
@@ -130,33 +130,33 @@ router.post('/getFavs', async (req, res) => {
         })
 
         await passBook.save();
-      console.log(data.IsManager)
-      if (data && data.IsManager) {
-        // console.log(`https://uat-hubble-api.miraclesoft.com/v2/employee/my-team-members/${req.body.userName}`)
-        // const managedUsers = await 
-        const managedUsers = await axios.get(`https://uat-hubble-api.miraclesoft.com/v2/employee/my-team-members/${req.body.userName}`, { headers: { 'Authorization': `Bearer ${data.token}` } })
-        // console.log(Array.isArray(managedUsers.data.data))
-        const employeesDetails = await managedUsers.data.data.map(user => ({ employeeID: user.id, name: user.name, username: user.loginId, designation: user.designation }));
-        console.log(employeesDetails.length)
-        if (employeesDetails.length > 0) {
-          await new managerSchema({
-            employeeDetails:employeesDetails,
-            managerId: data.EmpId
-          }).save()
+        console.log(data.IsManager)
+        if (data && data.IsManager) {
+          // console.log(`https://uat-hubble-api.miraclesoft.com/v2/employee/my-team-members/${req.body.userName}`)
+          // const managedUsers = await 
+          const managedUsers = await axios.get(`https://uat-hubble-api.miraclesoft.com/v2/employee/my-team-members/${req.body.userName}`, { headers: { 'Authorization': `Bearer ${data.token}` } })
+          // console.log(Array.isArray(managedUsers.data.data))
+          const employeesDetails = await managedUsers.data.data.map(user => ({ employeeID: user.id.toString(), name: user.name, username: user.loginId, designation: user.designation }));
+          console.log(employeesDetails.length)
+          if (employeesDetails.length > 0) {
+            await new managerSchema({
+              employeeDetails: employeesDetails,
+              managerId: data.EmpId
+            }).save()
+          }
         }
-      }
 
         // console.log("else", savedResult)
         console.log("............................Else resopnse..............................")
         return res.status(200).json([{ data: userData }])
       } else {
-        return res.status(400).send({data : `No records found with id: ${req.body.userName} or invalid credentails`});
+        return res.status(400).send({ data: `No records found with id: ${req.body.userName} or invalid credentails` });
       }
     }
 
 
   } catch (error) {
-  console.log(error)
+    console.log(error)
     return res.status(500).send(`Failed due to ${error}`);
   }
 });
@@ -195,7 +195,7 @@ router.post('/updateRewards', async (req, res) => {
 
   })
 
-  
+
 });
 
 router.post('/saveBookmarks', async (req, res) => {
@@ -341,14 +341,26 @@ router.post('/getEmployees', async (req, res) => {
       employeeDetails = await managerSchema.find();
 
     }
-    else{
-    
-    employeeDetails = await managerSchema.find({managerId : req.body.employeeID},{"employeeDetails" : { "$elemMatch" : { $or : [{ employeeID:  searchKey}, { username :  new RegExp(searchKey, 'i')}, { name :  new RegExp(searchKey, 'i')}]}}});
-    // { employeeDetails: { $elemMatch: { username: searchKey}}},
-        // { employeeDetails: { $elemMatch: { name: searchKey}}})
-  console.log("data", employeeDetails[0].employeeDetails)
-  res.send(employeeDetails)
-  }
+    else {
+
+      // employeeDetails = await managerSchema.find({ managerId: req.body.employeeID }, { employeeDetails: { $all: [{ "$elemMatch": { "employeeID": searchKey } }, { "$elemMatch": { "username": new RegExp(searchKey, 'i') } }, { "$elemMatch": { "name": new RegExp(searchKey, 'i') } }] } });
+      // employeeDetails = await managerSchema.find({
+      // $and : [{ managerId: req.body.employeeID }, {$or : [{"employeeDetails" :  { "name": new RegExp(searchKey, 'i') }}]}]
+      // })
+      employeeDetails = await managerSchema.aggregate([
+      {$match : {managerId: req.body.employeeID }},
+      {$unwind : '$employeeDetails'},
+      {$match : {
+        $or: [
+            { 'employeeDetails.name': { "$regex": searchKey, $options: 'xi' } },
+            { 'employeeDetails.username': { "$regex": searchKey, $options: 'xi' } },
+            { 'employeeDetails.employeeID': searchKey }
+        ]
+    }}
+      ])
+    // console.log("data here",employeeDetails)
+    }
+    res.send(employeeDetails)
   }
   catch (err) {
     console.log(err.message)
