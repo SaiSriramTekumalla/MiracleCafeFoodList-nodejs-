@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const managerSchema = mongoose.Schema({
     managerId: {
-    type: String
+    type: Number
     },
     employeeDetails: {
         type: Array

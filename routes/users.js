@@ -172,7 +172,7 @@ router.post('/updateRewards', async (req, res) => {
   };
   const userPoints = await userFavourites.findOne({ 'employeeID': req.body.employeeID }, { points: 1 });
   console.log("upts", userPoints)
-  let availablePoints = req.body.transactionType === 'Debit' ? userPoints.points - req.body.points : userPoints.points + req.body.points
+  let availablePoints = req.body.transactionType == 'Debit' ? userPoints.points - req.body.points : userPoints.points + req.body.points
   // console.log("ava",availablePoints)
   await userFavourites.updateOne({ employeeID: req.body.employeeID }, { points: availablePoints })
   const timestamp = moment(Date.now()).tz("Asia/Kolkata").format("DD/MM/YYYY h:mm A")
@@ -335,10 +335,12 @@ router.get('/getAllLikedItems', (req, res) => {
 router.post('/getEmployees', async (req, res) => {
 
   try {
+  console.log(req.body)
     let searchKey = req.body.title;
     var employeeDetails;
     if (searchKey === "" || searchKey === null) {
-      employeeDetails = await managerSchema.find();
+      emplDetails = await managerSchema.find();
+      employeeDetails = emplDetails[0]["employeeDetails"];
 
     }
     else {
@@ -353,7 +355,7 @@ router.post('/getEmployees', async (req, res) => {
         ]
     }}
       ])
-    // console.log("data here",employeeDetails)
+    employeeDetails = employeeDetails.map(data => data.employeeDetails)
     }
     res.send(employeeDetails)
   }
