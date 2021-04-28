@@ -84,7 +84,7 @@ router.post('/getFavs', async (req, res) => {
     let resBody;
     let resdata = await userFavourites.find({ $and: [{ username: name }, { password: password }] })
 
-    // console.log("1st If", "doc >>", resdata)
+    // console.log("1st If", "doc >>", req.body)
     if (resdata.length > 0) {
       resBody = resdata[0];
       console.log("............................IF resopnse..............................")
@@ -95,13 +95,11 @@ router.post('/getFavs', async (req, res) => {
         loginId: req.body.userName,
         password: req.body.password
       })
-      // console.log("else reached",  {       loginId: req.body.userName,
-      //   password: req.body.password})
-        // console.log(response.data.success)
+      
       if (response && response.data && response.data.success) {
 
         let data = response.data.data;
-        console.log("daa")
+  
         let userData = await userFavourites.create({
           // favourites: [],
           days: [],
@@ -115,7 +113,7 @@ router.post('/getFavs', async (req, res) => {
           anniversary: data.anniversary || "",
           diet: data.diet || "",
           userImage: data.ProfilePic,
-          role:  data.role || "",
+          role:  data.IsManager ? "manager" : req.body.userName == "admin" ? "owner" : "employee",
           points: data.points || 0,
           IsManager: data.IsManager
         });
@@ -150,7 +148,7 @@ router.post('/getFavs', async (req, res) => {
 
         // console.log("else", savedResult)
         console.log("............................Else resopnse..............................")
-        return res.status(200).json([{ data: userData[0] }])
+        return res.status(200).json([{ data: userData }])
       } else {
         return res.status(400).send({data : `No records found with id: ${req.body.userName} or invalid credentails`});
       }
@@ -276,6 +274,7 @@ var fs = require('fs');
 const { isValidObjectId } = require('mongoose');
 const { use } = require('./cartController');
 const { response } = require('express');
+const { isMaster } = require('cluster');
 
 function fileToBase64(filename) {
   if (filename !== undefined) {
@@ -337,14 +336,19 @@ router.post('/getEmployees', async (req, res) => {
 
   try {
     let searchKey = req.body.title;
-    let employeeDetails;
+    var employeeDetails;
     if (searchKey === "" || searchKey === null) {
       employeeDetails = await managerSchema.find();
 
     }
-    //console.log(item)
-    // {$or : [{title :  fname}, { mealtype: fname },{foodtype : fname} ]}
-    employeeDetails = await managerSchema.find({managerId : req.body.employeeID},{ employeeDetails: {$or: [{ employeeID: new RegExp(searchKey, 'i') }, { username: new RegExp(searchKey, 'i') }, { name: new RegExp(searchKey, 'i') }] }}, null)
+    else{
+    
+    employeeDetails = await managerSchema.find({managerId : req.body.employeeID},{"employeeDetails" : { "$elemMatch" : { $or : [{ employeeID:  searchKey}, { username :  new RegExp(searchKey, 'i')}, { name :  new RegExp(searchKey, 'i')}]}}});
+    // { employeeDetails: { $elemMatch: { username: searchKey}}},
+        // { employeeDetails: { $elemMatch: { name: searchKey}}})
+  console.log("data", employeeDetails[0].employeeDetails)
+  res.send(employeeDetails)
+  }
   }
   catch (err) {
     console.log(err.message)
