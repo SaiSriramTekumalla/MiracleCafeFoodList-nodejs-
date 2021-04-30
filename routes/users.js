@@ -115,6 +115,8 @@ router.post('/getFavs', async (req, res) => {
           userImage: data.ProfilePic,
           role: data.IsManager ? "manager" : req.body.userName == "admin" ? "owner" : "employee",
           points: data.points || 0,
+          pointsAssigned:0,
+          pointsTransaction:0,
           IsManager: data.IsManager
         });
         console.log("here is okay")
@@ -123,21 +125,26 @@ router.post('/getFavs', async (req, res) => {
         // .catch(err => console.log(err));
         console.log("something is fishy")
         // console.log("passbook empId", newUserData)
-        let passBook = new passBookSchema({
-          pointsAvailable: 0,
-          employeeID: data.EmpId,
-          transactionDetails: []
-        })
-
-        await passBook.save();
-        console.log(data.IsManager)
+       
+          let passBook = new passBookSchema({
+            pointsAvailable: 0,
+            pointsAssigned:0,
+            employeeID: data.EmpId,
+            transactionDetails: []
+          })
+  
+          var result = await passBook.save();
+        
+     
+        console.log("res",data.IsManager,result)
         if (data && data.IsManager) {
+        
           // console.log(`https://uat-hubble-api.miraclesoft.com/v2/employee/my-team-members/${req.body.userName}`)
           // const managedUsers = await 
           const managedUsers = await axios.get(`https://uat-hubble-api.miraclesoft.com/v2/employee/my-team-members/${req.body.userName}`, { headers: { 'Authorization': `Bearer ${data.token}` } })
           // console.log(Array.isArray(managedUsers.data.data))
-          const employeesDetails = await managedUsers.data.data.map(user => ({ employeeID: user.id.toString(), name: user.name, username: user.loginId, designation: user.designation }));
-          console.log(employeesDetails.length)
+          const employeesDetails = await managedUsers.data.data.map(user => ({ employeeID: user.id.toString(), name: user.name, username: user.loginId, designation: user.designation,departmentId:user.departmentId,points:0,description:"" }));
+          console.log("emps",managedUsers.data,"sdfsd",managedUsers.data.data)
           if (employeesDetails.length > 0) {
             await new managerSchema({
               employeeDetails: employeesDetails,
@@ -164,22 +171,30 @@ router.post('/getFavs', async (req, res) => {
 //  localhost:8000/users/updateRewards
 
 router.post('/updateRewards', async (req, res) => {
-  // console.log("req body", req.body)
+  console.log("req body", req.body.employeeID)
   var modelObject = {
     employeeID: req.body.employeeID,
     points: req.body.points,
 
   };
   const userPoints = await userFavourites.findOne({ 'employeeID': req.body.employeeID }, { points: 1 });
+  const managerPoints = await userFavourites.findOne({ 'employeeID': req.body.managerId }, { points: 1 });
   console.log("upts", userPoints)
-  let availablePoints = req.body.transactionType == 'Debit' ? userPoints.points - req.body.points : userPoints.points + req.body.points
+  if(userPoints !== null)
+  {
+    await userFavourites.findOneAndUpdate({ 'employeeID': req.body.employeeID }, { pointsAssigned: req.body.points });
+    var availablePoints = req.body.transactionType == 'Debit' ? userPoints.points - req.body.points : userPoints.points + req.body.points
+  
+ 
   // console.log("ava",availablePoints)
   await userFavourites.updateOne({ employeeID: req.body.employeeID }, { points: availablePoints })
   const timestamp = moment(Date.now()).tz("Asia/Kolkata").format("DD/MM/YYYY h:mm A")
+  var userAssignedPoints = await passBookSchema.findOne({employeeID: req.body.employeeID},{pointsAssigned:1})
   const ress = await passBookSchema.updateOne({ employeeID: req.body.employeeID }, {
 
     $set: {
-      pointsAvailable: availablePoints
+      pointsAvailable: availablePoints,
+      pointsAssigned:userAssignedPoints.pointsAssigned + req.body.points,
     },
     $push: {
       transactionDetails: [
@@ -187,7 +202,7 @@ router.post('/updateRewards', async (req, res) => {
           "pointsSpent": req.body.points,
           "transactionType": req.body.transactionType,
           "transactionReason": req.body.transactionReason,
-          "transactionDetails": '',
+          "transactionDetails": req.body.transactionDetails,
           "timestamp": timestamp,
         }
       ]
@@ -195,6 +210,32 @@ router.post('/updateRewards', async (req, res) => {
 
   })
 
+  managerPoints
+  await passBookSchema.updateOne({ employeeID: req.body.managerId }, {
+    $set: {
+      pointsAvailable: managerPoints.points,
+      // pointsAssigned:req.body.points,
+    },
+    $push: {
+      transactionDetails: [
+        {
+          "pointsSpent": req.body.points,
+          "pointsAssignedTo":req.body.username,
+          "transactionType": 'Debit',
+          "transactionReason": req.body.transactionReason,
+          "transactionDetails": req.body.transactionDetails,
+          "timestamp": timestamp,
+        }
+      ]
+    }
+
+  })
+
+  res.json({message:"Rewards Added Succesfully"})
+  }
+  else{
+    res.json({message:"User Doesn't Have Miracle Cafe Account"})
+  }
 
 });
 

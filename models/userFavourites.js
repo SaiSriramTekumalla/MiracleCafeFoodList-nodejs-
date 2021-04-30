@@ -66,7 +66,9 @@ bookmarks:{
 },
 IsManager:{
 type: Boolean
-}
+},
+
+
 });
 
   module.exports = mongoose.model('FavSchema', FavSchema);

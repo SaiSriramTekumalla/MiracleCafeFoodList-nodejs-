@@ -9,7 +9,13 @@ const passBookSchema = mongoose.Schema({
    },
    employeeID:{
        type:Number
-   }
+   },
+   pointsAssigned:{
+    type:Number
+  },
+  pointsAssignedTo:{
+      type:String
+  }
 })
 // passBookSchema.set('timestamps', true);
 module.exports = mongoose.model('passBookSchema', passBookSchema);

@@ -32,7 +32,7 @@ router.post('/allMealTypes', async (req, res) => {
     var getAllItemsList
     if (req.body.mealType === "") {
       // console.log("if")
-      getAllItemsList = await itemsSchema.find({},{image:0}).lean();
+      getAllItemsList = await itemsSchema.find({}).lean();
       // console.log('asdfsdaf',getAllItemsList)
       getAllItemsList.map(data => {
       data["image"] = fileToBase64(data['image'])
@@ -201,6 +201,9 @@ router.get('/searchByItem', async (req, res) => {
     if (req.query.title === "" || req.query.title === null) {
       // console.log("empty search")
       itemsSchema.find(function (err, docs) {
+        docs.forEach(x => {
+          x.image = fileToBase64(x.image)
+        })
         res.json(docs)
       })
 
@@ -210,6 +213,9 @@ router.get('/searchByItem', async (req, res) => {
     // {$or : [{title :  fname}, { mealtype: fname },{foodtype : fname} ]}
     itemsSchema.find({ $or: [{ title: new RegExp(req.query.title, 'i') }, { content: new RegExp(req.query.title, 'i') }] }, null, function (err, docs) {
       // console.log(docs)
+      docs.forEach(x => {
+        x.image = fileToBase64(x.image)
+      })
       res.json(docs)
     })
 
@@ -478,40 +484,43 @@ router.post('/getByFilterData', async (req, res) => {
 router.post('/addCartItems', async (req, res) => {
   console.log("cartItems reqbody", req.body);
 
-  try {
-    let query
-    let cartItems
-    const getAllCartList = await cart.findOne({
-      employeeID: req.body.employeeID
-    })
 
-    console.log("cartLsit", getAllCartList)
-    if (getAllCartList && getAllCartList.cartArray) {
-      // console.log("if", getAllCartList)
-      query = [...getAllCartList.cartArray, { quantity: req.body.quantity, itemId: req.body.itemId }]
-      // console.log(query)
-      cartItems = await cart.findOneAndUpdate({ employeeID: req.body.employeeID }, { cartArray: query })
-      // console.log("cart itemsssssssssss1", cartItems);
+    try {
+      let query
+      let cartItems
+      const getAllCartList = await cart.findOne({
+        employeeID: req.body.employeeID
+      })
+  
+      console.log("cartLsit", getAllCartList)
+      if (getAllCartList && getAllCartList.cartArray) {
+        // console.log("if", getAllCartList)
+        query = [...getAllCartList.cartArray, { quantity: req.body.quantity, itemId: req.body.itemId }]
+        // console.log(query)
+        cartItems = await cart.findOneAndUpdate({ employeeID: req.body.employeeID }, { cartArray: query })
+        // console.log("cart itemsssssssssss1", cartItems);
+      }
+      else {
+        query = [{ cartArray: { quantity: req.body.quantity, itemId: req.body.itemId }, employeeID: req.body.employeeID }]
+  
+        cartItems = await new cart(...query).save();
+        // console.log("cart itemsssssssssss2", cartItems);
+      }
+  
+      // console.log("query",query)
+      // console.log("new user",cartItems)
+  
+      // const savedCartList = await postCartItems.save();
+      res.json({ success: "Added To Cart Successfully", cartItems });
     }
-    else {
-      query = [{ cartArray: { quantity: req.body.quantity, itemId: req.body.itemId }, employeeID: req.body.employeeID }]
-
-      cartItems = await new cart(...query).save();
-      // console.log("cart itemsssssssssss2", cartItems);
-    }
-
-    // console.log("query",query)
-    // console.log("new user",cartItems)
-
-    // const savedCartList = await postCartItems.save();
-    res.json({ success: "Added To Cart Successfully", cartItems });
-  }
+  
 
   // if (err) {
   //   res.json({ message: err });
   // }
   // }
   catch (err) {
+    console.log(err.message)
     res.json({ cartItems: [] });
   }
 
@@ -521,7 +530,7 @@ router.post('/addCartItems', async (req, res) => {
 
 router.put('/updateCart', async (req, res) => {
 
-  // console.log('req.body cart', req.body);
+  console.log('req.body cart', req.body);
   // userFavourites.updateOne({ "username": name }, { $set: { "favourites": favourites, "allergies": allergies, "days": days, "diet": diet, "points": points } },
   // var userCart = await cart.findOne({ employeeID: req.body.employeeID })
   // if(userCart && userCart.cartArray)
@@ -534,13 +543,14 @@ router.put('/updateCart', async (req, res) => {
   //       // console.log("sfasdf", x)
   //     }
   //     return x;
-  //   })
-  
+  //   }){ employeeID: req.body.employeeID, itemId: req.body.itemId }
+  // {$or:[{region: "NA"},{sector:"Some Sector"}]}
     // console.log("userrrrrrrrrrrrrrr",userCart[0].cartArray)
-    await cart.updateOne({ employeeID: req.body.employeeID, itemId: req.body.itemId }, { quantity: req.body.quantity })
+    let userCart = await cart.updateOne({ employeeID: req.body.employeeID.toString(),"cartArray.itemId":req.body.itemId}, { $set : { "cartArray.$.quantity": req.body.quantity}})
+    // let userCart = await cart.findOneAndUpdate({$and:[{ employeeID: req.body.employeeID},{itemId: req.body.itemId }]}, { quantity: req.body.quantity })
   // }
 
-  // console.log("userCarttttttttttttt", userCart)
+  console.log("userCarttttttttttttt", userCart)
   res.json({ success: "Cart Updated Successfully", data: userCart })
 });
 
@@ -565,7 +575,7 @@ async function getSequenceNextValue(seqName) {
   return seqDoc.sequenceValue
 }
 router.post('/deleteCartArray', async (req, res) => {
-  // console.log("to be deleted cart details", req.body);
+  // console.log("to be deleted cart details", req.body.cartDetails);
 
   // let ressss = getNextSequenceValue("orderId")
 
@@ -613,7 +623,8 @@ router.post('/deleteCartArray', async (req, res) => {
         const userPassBook = await passBookSchema.update({employeeID:req.body.employeeID},{
           
             $set:{
-            pointsAvailable:availablePoints
+            pointsAvailable:availablePoints,
+            
              },
              $push:{
                     transactionDetails:[
@@ -654,7 +665,7 @@ router.post('/deleteCartArray', async (req, res) => {
 });
 
 router.get('/getOrders', async (req, res) => {
-  // console.log("requ query", req.query)
+  console.log("requ query", req.query)
   // const allOrders = await orders.find({ 'employeeID': req.query.employeeID });
   orders.find({ 'employeeID': req.query.employeeID }, function (err, docs) {
     // console.log("order docs-------------------------------------->", docs)
@@ -724,6 +735,7 @@ router.get('/getAllCart', async (req, res) => {
           points: itemData.points,
           title: itemData.title,
           likes: itemData.likes,
+          mealType:itemData.mealType,
           image: fileToBase64(itemData.image),
           quantity: cartArray[index].quantity,
           totalPoints: itemData.points * cartArray[index].quantity
