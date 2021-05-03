@@ -197,7 +197,7 @@ router.get('/getByitemName', async (req, res) => {
 
 router.get('/searchByItem', async (req, res) => {
   try {
-    // console.log("req", req.query.title)
+    console.log("req", req.query)
     if (req.query.title === "" || req.query.title === null) {
       // console.log("empty search")
       itemsSchema.find(function (err, docs) {
@@ -208,16 +208,25 @@ router.get('/searchByItem', async (req, res) => {
       })
 
     }
-    var item = '/' + req.query.title + '/i'
+    // var item = '/' + req.query.title + '/i'
     //console.log(item)
     // {$or : [{title :  fname}, { mealtype: fname },{foodtype : fname} ]}
-    itemsSchema.find({ $or: [{ title: new RegExp(req.query.title, 'i') }, { content: new RegExp(req.query.title, 'i') }] }, null, function (err, docs) {
-      // console.log(docs)
-      docs.forEach(x => {
-        x.image = fileToBase64(x.image)
+    else {
+      itemsSchema.find({ $or: [{ title: new RegExp(req.query.title, 'i') }, { content: new RegExp(req.query.title, 'i') }] }, null, function (err, docs) {
+        // console.log(docs)
+        if(!err)
+        {
+        docs.forEach(x => {
+          x.image = fileToBase64(x.image)
+        })
+        res.json(docs)
+      }
+      else{
+        res.json(docs=[])
+      }
       })
-      res.json(docs)
-    })
+    }
+  
 
   }
   catch (err) {
@@ -410,7 +419,7 @@ function fileToBase64(filename) {
 
 router.post('/getByFilterData', async (req, res) => {
   try {
-    console.log("get by filter data")
+    console.log("get by filter data",req.body)
     var exists = await userFavourites.find({ username: req.body.userName }, { bookmarks: 1 })
     // console.log("req",req.body,"exists",exists)
     console.log("query")
