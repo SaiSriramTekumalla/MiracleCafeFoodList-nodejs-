@@ -95,7 +95,7 @@ router.post('/getFavs', async (req, res) => {
         loginId: req.body.userName,
         password: req.body.password
       })
-
+console.log("empRes",response)
       if (response && response.data && response.data.success) {
 
         let data = response.data.data;
@@ -114,7 +114,7 @@ router.post('/getFavs', async (req, res) => {
           diet: data.diet || "",
           userImage: data.ProfilePic,
           role: data.IsManager ? "manager" : req.body.userName == "admin" ? "owner" : "employee",
-          points: data.points || 0,
+          points: data.points || data.IsManager ? 1000 : 0,
           pointsAssigned:0,
           pointsTransaction:0,
           IsManager: data.IsManager
@@ -144,7 +144,7 @@ router.post('/getFavs', async (req, res) => {
           const managedUsers = await axios.get(`https://uat-hubble-api.miraclesoft.com/v2/employee/my-team-members/${req.body.userName}`, { headers: { 'Authorization': `Bearer ${data.token}` } })
           // console.log(Array.isArray(managedUsers.data.data))
           const employeesDetails = await managedUsers.data.data.map(user => ({ employeeID: user.id.toString(), name: user.name, username: user.loginId, designation: user.designation,departmentId:user.departmentId,points:0,description:"" }));
-          console.log("emps",managedUsers.data,"sdfsd",managedUsers.data.data)
+          // console.log("empssdfsd",managedUsers.data.data)
           if (employeesDetails.length > 0) {
             await new managerSchema({
               employeeDetails: employeesDetails,
@@ -157,7 +157,7 @@ router.post('/getFavs', async (req, res) => {
         console.log("............................Else resopnse..............................")
         return res.status(200).json([{ data: userData }])
       } else {
-        return res.status(400).send({ data: `No records found with id: ${req.body.userName} or invalid credentails` });
+        return res.status(400).send([{ data: `No records found with id: ${req.body.userName} or invalid credentails` }]);
       }
     }
 
