@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 8000
 app.use(cors({
   "origin": "*",
   // "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
-  // "preflightContinue": false,
+  "preflightContinue": false,
   // "optionsSuccessStatus": 200,
   "Access-Control-Allow-Origin": '*'
 }));
